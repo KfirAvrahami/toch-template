@@ -1,0 +1,24 @@
+.top-bar {
+  position: fixed;
+  inset-block-start: 0;
+  inset-inline: 0;
+  height: var(--shell-titlebar-height);
+  padding-block: 0;
+  padding-inline: 3%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: var(--topbar-bg);
+  color: var(--topbar-text);
+  z-index: 1000;
+  box-shadow: 0 0.125rem 0.625rem var(--color-shadow-strong);
+}
+
+.top-bar__logo {
+  font-weight: 700;
+  letter-spacing: 0.06em;
+}
+
+.top-bar__greeting {
+  font-weight: 500;
+}

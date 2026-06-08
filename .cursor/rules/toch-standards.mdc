@@ -1,0 +1,15 @@
+---
+description: Always apply TOCH project standards via toch-standards-skill
+alwaysApply: true
+---
+
+# TOCH standards (pointer)
+
+For **all** work in this repo:
+
+1. Read `.cursor/skills/toch-standards-skill/SKILL.md`.
+2. Load the matching `reference/*.md` files for the task scope **and** `reference/08-user-amendments.md` (project overrides), per the skill workflow.
+3. Apply **REQUIRED** / **FORBIDDEN** by default. When an action is **questionable** (user request conflicts with a standard, protected-file edit without authorization, ambiguous **DEFAULT**, or high-impact **FORBIDDEN**), **stop** and run a **Standards check** — do not proceed silently.
+4. On substantive tasks, run the checklist in `reference/07-anti-patterns-dictionary-checklist.md`.
+5. Every Standards check must include a **Rule ID** (`STANDARDS:[SECTION]:slug`), severity, a one-line rule quote, source file + section, the proposed action, and ask the user to reply **Follow** or **Ignore** that Rule ID (see skill for the message template).
+6. Before marking a substantive task complete, run **Standards documentation ASK** per the skill when you introduced conventions not already in STANDARDS — ask Promote to STANDARDS / Project-only (08) / Skip docs; do not edit standards files without the user's choice.

@@ -1,0 +1,28 @@
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 2%;
+  border: 0;
+  border-radius: 0.625rem;
+  padding: 2% 4%;
+  font-size: 0.875rem;
+  font-weight: 500;
+  cursor: pointer;
+  text-decoration: none;
+  background: var(--sidebar-bg);
+  color: var(--color-text);
+  border: 0.0625rem solid var(--color-border);
+}
+
+.btn--primary {
+  background: var(--topbar-bg);
+  color: var(--topbar-text);
+  border-color: var(--topbar-bg);
+}
+
+.btn--ghost {
+  background: transparent;
+  color: var(--color-link);
+  border-color: transparent;
+}

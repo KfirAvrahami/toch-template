@@ -1,0 +1,27 @@
+<aside class="side-bar">
+  <header class="side-bar__header">
+    <span i18n="@@sidebar.greeting">Hello</span>
+    {{ displayName() }}
+  </header>
+  <nav class="side-bar__nav">
+    <a
+      class="side-bar__link"
+      routerLink="/home"
+      routerLinkActive="side-bar__link--active"
+      data-testid="sidebar-nav-home"
+    >
+      <mat-icon svgIcon="home" aria-hidden="true" class="side-bar__icon"></mat-icon>
+      <span i18n="@@sidebar.home">Home</span>
+    </a>
+    <a
+      class="side-bar__link"
+      routerLink="/page-2"
+      routerLinkActive="side-bar__link--active"
+      data-testid="sidebar-nav-page2"
+    >
+      <mat-icon svgIcon="page" aria-hidden="true" class="side-bar__icon"></mat-icon>
+      <span i18n="@@sidebar.page2">Page 2</span>
+    </a>
+  </nav>
+  <footer class="side-bar__footer" i18n="@@sidebar.footer">Navigation sidebar</footer>
+</aside>

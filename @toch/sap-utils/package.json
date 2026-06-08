@@ -1,0 +1,22 @@
+{
+  "name": "@toch/sap-utils",
+  "version": "1.0.0",
+  "main": "./index.js",
+  "types": "./generated-types/index.d.mts",
+  "exports": {
+    ".": {
+      "types": "./generated-types/index.d.mts",
+      "import": "./index.mjs",
+      "require": "./index.js",
+      "default": "./index.mjs"
+    }
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "build": "tsc",
+    "generate:types": "tsc -p tsconfig.dts.json",
+    "prepublishOnly": "npm run build",
+    "dist": "rimraf ./*.tgz && npm run build && npm pack",
+    "commit": "cz"
+  }
+}

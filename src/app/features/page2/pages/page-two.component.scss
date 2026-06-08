@@ -1,0 +1,59 @@
+.page-two {
+  background: var(--page-card-bg);
+  border-radius: 1rem;
+  padding: 3%;
+  box-shadow: 0 0.5rem 1.75rem var(--color-shadow-soft);
+  min-height: 50vh;
+}
+
+.page-two__heading {
+  font-size: clamp(1.25rem, 2.5vw, 2rem);
+}
+
+.page-two__description {
+  color: var(--color-text-muted);
+}
+
+.page-two__button-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(12rem, 1fr));
+  gap: 2%;
+  padding-block: 3%;
+}
+
+.page-two__button {
+  cursor: pointer;
+}
+
+.page-two__status-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(18rem, 1fr));
+  gap: 3%;
+}
+
+.page-two__status-card {
+  border-radius: 0.875rem;
+  border: 0.0625rem solid var(--page-card-border);
+  padding: 3%;
+}
+
+.page-two__status-heading {
+  font-size: 1rem;
+  font-weight: 600;
+}
+
+.page-two__status-text {
+  color: var(--color-text-light);
+}
+
+.page-two__code-block {
+  max-height: 30vh;
+  overflow: auto;
+  background: var(--sidebar-bg-soft);
+  border-radius: 0.5rem;
+  padding: 3%;
+}
+
+.page-two__error-text {
+  color: var(--color-error);
+}

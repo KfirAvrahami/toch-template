@@ -1,0 +1,27 @@
+:host {
+  display: block;
+  min-height: 100dvh;
+  background: var(--color-bg);
+}
+
+.layout-shell {
+  min-height: 100dvh;
+}
+
+.layout-shell.with-top-bar {
+  padding-block-start: var(--shell-titlebar-height);
+}
+
+.main-content {
+  padding: 3%;
+}
+
+.main-content.with-sidebar {
+  margin-inline-end: 18%;
+}
+
+@media (max-width: 60rem) {
+  .main-content.with-sidebar {
+    margin-inline-end: 0;
+  }
+}

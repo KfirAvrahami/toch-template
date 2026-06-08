@@ -1,0 +1,13 @@
+@if (showTopBar()) {
+  <app-top-bar [displayName]="displayName()" />
+}
+
+<div class="layout-shell" [class.with-top-bar]="showTopBar()">
+  @if (showSideBar()) {
+    <app-side-bar [displayName]="displayName()" />
+  }
+
+  <main class="main-content" [class.with-sidebar]="showSideBar()">
+    <router-outlet />
+  </main>
+</div>

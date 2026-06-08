@@ -1,0 +1,41 @@
+.splash-screen {
+  width: 40%;
+  min-width: 16rem;
+  height: 28%;
+  min-height: 10rem;
+  border-radius: 1rem;
+  background: var(--splash-bg);
+  color: var(--splash-text);
+  display: grid;
+  place-items: center;
+}
+
+.splash-screen__pulse {
+  width: 22%;
+  aspect-ratio: 1;
+  border-radius: 50%;
+  background: radial-gradient(
+    circle,
+    var(--splash-accent) 0%,
+    var(--color-link) 60%,
+    transparent 70%
+  );
+  animation: splashPulse 1.6s ease-in-out infinite;
+}
+
+.splash-screen__title {
+  font-weight: 600;
+  letter-spacing: 0.04em;
+}
+
+@keyframes splashPulse {
+  0%,
+  100% {
+    transform: scale(0.9);
+    opacity: 0.75;
+  }
+  50% {
+    transform: scale(1.05);
+    opacity: 1;
+  }
+}

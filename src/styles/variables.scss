@@ -1,0 +1,41 @@
+:root {
+  --shell-titlebar-height: 4rem;
+
+  --color-bg: #f3f4f6;
+  --color-text: #0f172a;
+  --color-text-light: #334155;
+  --color-text-muted: #64748b;
+  --color-link: #0369a1;
+  --color-border: #e2e8f0;
+  --color-border-subtle: #f1f5f9;
+  --color-error: #b91c1c;
+  --color-shadow-soft: rgba(15, 23, 42, 0.12);
+  --color-shadow-strong: rgba(2, 6, 23, 0.2);
+
+  --color-status-done: #15803d;
+  --color-status-done-bg: #dcfce7;
+  --color-status-standby: #a16207;
+  --color-status-standby-bg: #fef9c3;
+  --color-status-late: #b91c1c;
+  --color-status-late-bg: #fee2e2;
+
+  --topbar-bg: #0f172a;
+  --topbar-bg-hover: #1e293b;
+  --topbar-text: #f8fafc;
+
+  --sidebar-bg: #ffffff;
+  --sidebar-bg-soft: #f8fafc;
+  --sidebar-text: #0f172a;
+  --sidebar-border: #e2e8f0;
+
+  --splash-bg: #0f172a;
+  --splash-text: #f8fafc;
+  --splash-accent: #38bdf8;
+
+  --spinner-ring-color: rgba(255, 255, 255, 0.25);
+  --spinner-track-color: #38bdf8;
+  --spinner-glow: rgba(56, 189, 248, 0.4);
+
+  --page-card-bg: #ffffff;
+  --page-card-border: #e2e8f0;
+}

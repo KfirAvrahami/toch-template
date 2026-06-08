@@ -1,0 +1,15 @@
+{
+  "compilerOptions": {
+    "allowJs": true,
+    "declaration": true,
+    "emitDeclarationOnly": true,
+    "outDir": "./generated-types",
+    "module": "NodeNext",
+    "moduleResolution": "NodeNext",
+    "target": "ES2020",
+    "strict": false,
+    "checkJs": false,
+    "skipLibCheck": true
+  },
+  "include": ["index.mjs", "dist/sap-odata/**/*.js"]
+}

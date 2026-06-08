@@ -1,0 +1,22 @@
+@use './styles/variables';
+@use './styles/global';
+@use './styles/overlay';
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  min-height: 100%;
+  font-family: 'Segoe UI', Tahoma, sans-serif;
+  background: var(--color-bg);
+  color: var(--color-text);
+}
+
+html[dir='rtl'],
+html[dir='rtl'] body {
+  direction: rtl;
+}

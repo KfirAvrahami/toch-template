@@ -1,0 +1,23 @@
+.cdk-overlay-pane.overlay-wrapper {
+  border-radius: 1rem;
+  overflow: hidden;
+}
+
+.cdk-overlay-pane.overlay-wrapper.top-panel {
+  top: 0 !important;
+}
+
+.cdk-overlay-pane.overlay-wrapper.overlay-fade-out {
+  animation: overlayFadeOut 350ms ease forwards;
+}
+
+@keyframes overlayFadeOut {
+  from {
+    opacity: 1;
+    transform: translateY(0);
+  }
+  to {
+    opacity: 0;
+    transform: translateY(-0.5rem);
+  }
+}

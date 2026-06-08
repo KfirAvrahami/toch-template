@@ -1,0 +1,11 @@
+{
+  "/api": {
+    "target": "https://YOUR-SAP-GATEWAY-HOST.example.com",
+    "secure": true,
+    "changeOrigin": true,
+    "logLevel": "debug",
+    "pathRewrite": {
+      "^/api": "/sap/opu/odata/sap"
+    }
+  }
+}

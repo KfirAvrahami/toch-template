@@ -1,0 +1,91 @@
+<section class="page-two">
+  <h1 class="page-two__heading" i18n="@@page2.heading">Page 2 Test Harness</h1>
+  <p class="page-two__description" i18n="@@page2.description">
+    Use this page to test overlays, lifecycle helpers, and independent adapters.
+  </p>
+
+  <div class="page-two__button-grid">
+    <button
+      type="button"
+      class="page-two__button btn btn--primary"
+      data-testid="page2-show-loading"
+      (click)="showLoading()"
+      i18n="@@page2.showLoading"
+    >
+      Show loading
+    </button>
+    <button
+      type="button"
+      class="page-two__button btn btn--primary"
+      data-testid="page2-show-splash"
+      (click)="showSplash()"
+      i18n="@@page2.showSplash"
+    >
+      Show splash
+    </button>
+    <button
+      type="button"
+      class="page-two__button btn btn--primary"
+      data-testid="page2-run-adapter"
+      (click)="runActiveAdapter()"
+      i18n="@@page2.runAdapter"
+    >
+      Run active adapter
+    </button>
+    <button
+      type="button"
+      class="page-two__button btn btn--primary"
+      data-testid="page2-run-cache-test"
+      (click)="runCacheTest()"
+      i18n="@@page2.runCacheTest"
+    >
+      Run cache test (same request twice)
+    </button>
+    <button
+      type="button"
+      class="page-two__button btn btn--primary"
+      data-testid="page2-format-sap"
+      (click)="formatSapLikeData()"
+      i18n="@@page2.formatSap"
+    >
+      Format SAP-like data
+    </button>
+  </div>
+
+  <div class="page-two__status-grid">
+    <article class="page-two__status-card">
+      <h2 class="page-two__status-heading" i18n="@@page2.lifecycleHeading">BaseComponent lifecycle</h2>
+      <p class="page-two__status-text">{{ lifecycleSummary() }}</p>
+      <p class="page-two__status-text">
+        <span i18n="@@page2.liveTick">live tick (destroy-safe):</span>
+        {{ tick$ | async }}
+      </p>
+    </article>
+
+    <article class="page-two__status-card">
+      <h2 class="page-two__status-heading" i18n="@@page2.adapterHeading">Adapter output</h2>
+      @if (cacheTestStatus()) {
+        <p class="page-two__status-text">{{ cacheTestStatus() }}</p>
+      }
+      @if (adapterError()) {
+        <p class="page-two__error-text">{{ adapterError() }}</p>
+      }
+      @if (adapterResult(); as result) {
+        <p class="page-two__status-text"><strong>{{ result.title }}</strong></p>
+        <p class="page-two__status-text">{{ result.subtitle }}</p>
+        <pre class="page-two__code-block">{{ result.payload | json }}</pre>
+      } @else {
+        <p class="page-two__status-text" i18n="@@page2.noAdapterResult">No adapter result yet.</p>
+      }
+    </article>
+
+    <article class="page-two__status-card">
+      <h2 class="page-two__status-heading" i18n="@@page2.sapHeading">SAP utils formatted output</h2>
+      @if (sapReadableData(); as sapData) {
+        <pre class="page-two__code-block">{{ sapData | json }}</pre>
+      } @else {
+        <p class="page-two__status-text" i18n="@@page2.noSapOutput">No formatted SAP-like output yet.</p>
+      }
+    </article>
+  </div>
+</section>
