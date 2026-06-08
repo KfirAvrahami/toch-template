@@ -1,7 +1,7 @@
 import { InjectionToken, Provider } from '@angular/core';
 import { PAGE2_API_PROVIDER } from './interface';
-import { Page2ApiAdapter } from './api/apiAdapter';
-import { Page2MockAdapter } from './api/mockAdapter';
+import { Page2ApiAdapter } from './api/adapter.sap';
+import { Page2MockAdapter } from './api/adapter.mock';
 import { Page2Service } from '../services/page2.service';
 
 export namespace Page2ApiProviders {

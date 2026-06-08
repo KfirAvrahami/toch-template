@@ -18,6 +18,9 @@
         "locales": {
           "he": {
             "translation": "src/locale/i18n/he.json"
+          },
+          "he-balmas": {
+            "translation": "src/locale/i18n/he-balmas.json"
           }
         }
       },
@@ -51,7 +54,7 @@
           },
           "configurations": {
             "production": {
-              "localize": ["he"],
+              "localize": ["he", "he-balmas"],
               "budgets": [
                 {
                   "type": "initial",
@@ -79,6 +82,9 @@
             },
             "he": {
               "localize": ["he"]
+            },
+            "he-balmas": {
+              "localize": ["he-balmas"]
             }
           },
           "defaultConfiguration": "production"
@@ -97,6 +103,9 @@
             },
             "he": {
               "buildTarget": "angular-20-template:build:development,he"
+            },
+            "he-balmas": {
+              "buildTarget": "angular-20-template:build:development,he-balmas"
             }
           },
           "defaultConfiguration": "development"
