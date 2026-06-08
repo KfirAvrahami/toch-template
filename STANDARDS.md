@@ -176,8 +176,8 @@ src/
           interface.ts          — IFeatureAdapter interface
           providers.ts          — InjectionToken + Mock/Api provider arrays
           api/
-            mockAdapter.ts
-            apiAdapter.ts
+            adapter.mock.ts
+            adapter.sap.ts
     shared/
       pipes/
         <name>.pipe.ts
@@ -299,7 +299,7 @@ export class MyComponent extends BaseComponent {
 ### src/app/app.routes.ts
 - REQUIRED: All routes use `loadComponent` (lazy loading). No eagerly loaded feature components.
 - REQUIRED: Routes that use the `Api` adapter declare `providers: [...FeatureProviders.Api]` at the route level.
-- FORBIDDEN: Import `MockAdapter` or `ApiAdapter` at the app routes level for production routes.
+- FORBIDDEN: Import `adapter.mock` or `adapter.sap` at the app routes level for production routes.
 - PATTERN:
   ```ts
   {
@@ -575,7 +575,7 @@ SCALE GUIDANCE (adjust per Figma):
 - Pipes: `<name>.pipe.ts`
 - Types: `types.ts` (per feature), `utility.types.ts` (base)
 - Mock data: `<feature>-mock.data.ts`
-- Adapters: `mockAdapter.ts`, `apiAdapter.ts` (exact names, lowercase camel)
+- Adapters: `adapter.mock.ts`, `adapter.sap.ts` (exact names, lowercase camel)
 - Barrel: `index.ts`
 
 ### Constants
@@ -744,8 +744,8 @@ adapters/
   interface.ts     — defines IFeatureAdapter
   providers.ts     — InjectionToken + Mock/Api provider arrays
   api/
-    mockAdapter.ts — implements IFeatureAdapter with hardcoded data
-    apiAdapter.ts  — implements IFeatureAdapter calling SAP via BaseSapApiService
+    adapter.mock.ts — implements IFeatureAdapter with hardcoded data
+    adapter.sap.ts  — implements IFeatureAdapter calling SAP via BaseSapApiService
 ```
 
 ### interface.ts pattern:
@@ -791,7 +791,7 @@ export class HomeService {
 { path: 'home', providers: [...HomeProviders.Api], loadComponent: ... }
 ```
 
-FORBIDDEN: Import `MockAdapter` or `ApiAdapter` class directly in a component or service.
+FORBIDDEN: Import `adapter.mock` or `adapter.sap` class directly in a component or service.
 FORBIDDEN: Use `if (environment.production)` to switch adapters — use the provider pattern.
 FORBIDDEN: Add an adapter discriminator field (e.g. `adapter: 'mock' | 'api'`) to result interfaces unless the consumer explicitly needs to distinguish the source. The adapter pattern's purpose is transparency — the consumer should not know or care which adapter is active.
 REQUIRED: `mockAdapter.ts` returns data from `<feature>-mock.data.ts` — never inline mock data in the adapter.
