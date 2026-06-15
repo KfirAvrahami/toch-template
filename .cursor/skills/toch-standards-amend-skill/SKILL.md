@@ -44,6 +44,8 @@ Process review submissions and update project standards. Do **not** use this ski
 
 Read the user message (slash command, pasted form, or chat summary). Extract Rule, optional Good/Bad examples, Scope, Promote, and optional Context.
 
+Before inferring Scope, read `name` in [package.json](../../../package.json) and record the detected **Repo mode**: `template` if `name === "angular-20-template"`, otherwise `project`. Use this as the default Scope when the user did not provide one (see Scope guidance below).
+
 ### 2. Generate formal rule (agent)
 
 Read [STANDARDS.md](../../../STANDARDS.md) and the matching reference file(s) for the topic. Then produce a **proposal** with:
@@ -59,6 +61,7 @@ Read [STANDARDS.md](../../../STANDARDS.md) and the matching reference file(s) fo
 
 **Scope guidance:**
 
+- **Default when user didn't specify:** `template-wide` if Repo mode is `template` (`package.json#name === "angular-20-template"`), otherwise `project-only`. The user's explicit Scope in the form always wins.
 - `template-wide` → generic wording; edit `reference/01`–`07` + `STANDARDS.md` when promoting.
 - `project-only` → rules for this repo after `initProjName` (not the template source); app-specific wording allowed; promote under `## [PROJECT-AMENDMENTS]` in [08-user-amendments.md](../toch-standards-skill/reference/08-user-amendments.md) only (`Change type: project-override`).
 
@@ -69,6 +72,7 @@ Read [STANDARDS.md](../../../STANDARDS.md) and the matching reference file(s) fo
 
 | Field | Value |
 |-------|-------|
+| Repo mode | template / project |
 | Change type | … |
 | Target section | `[SECTION]` |
 | Rule ID | `STANDARDS:[SECTION]:slug` |
@@ -120,10 +124,13 @@ Map `[SECTION]` → reference file (edit **and** mirror in [STANDARDS.md](../../
 
 ### 5. Changelog
 
+The `## Changelog` in `08-user-amendments.md` tracks **project-only** rule history (Scope: `project-only`). Template-wide promotions are recorded by their edits to `STANDARDS.md` + `reference/01`–`07` and by git history — do **not** log them here.
+
 When promotion finishes (or user keeps `Promote: no` but you still record the inbox item for traceability):
 
-- Move the inbox row to `## Changelog` in `08-user-amendments.md` and remove it from Inbox when promoted.
-- If `Promote: no`, **leave** the row in Inbox (do not delete until promoted later).
+- If Scope is `project-only` and `Promote: yes`: move the inbox row to `## Changelog` in `08-user-amendments.md` and remove it from Inbox.
+- If Scope is `template-wide`: remove the row from Inbox on promotion; do **not** append to Changelog.
+- If `Promote: no`, **leave** the row in Inbox (do not delete until promoted later), regardless of scope.
 
 Changelog columns:
 
