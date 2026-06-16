@@ -17,5 +17,6 @@ Either way the agent follows [.cursor/skills/toch-standards-amend-skill/SKILL.md
 3. **Where it lands:**
    - **Template-wide** → [STANDARDS.md](STANDARDS.md) + matching `reference/01`–`07` file
    - **Project-only** → [reference/08-user-amendments.md](.cursor/skills/toch-standards-skill/reference/08-user-amendments.md) only (Changelog tracks project-only promotions)
+4. **Test prompt (optional)** — after promotion, the agent may ask whether to **add a validation test prompt**. If yes, it updates [SKILL-CREATOR-TEST-PROMPTS.md](.cursor/skills/toch-standards-skill/SKILL-CREATOR-TEST-PROMPTS.md) and [evals/evals.json](.cursor/skills/toch-standards-skill/evals/evals.json) so future skill checks cover the new rule.
 
 During normal coding, the agent may ask how to record a new convention (Promote to STANDARDS / Project-only / Skip docs) before finishing a task — same amend flow if you choose to promote.

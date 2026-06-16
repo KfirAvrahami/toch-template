@@ -109,3 +109,8 @@ SVG assets live in `src/assets/icons/`. `IconRegistryService` registers them at 
 ## Standards
 
 Development rules live in [STANDARDS.md](STANDARDS.md). Cursor loads split references from `.cursor/skills/toch-standards-skill/reference/`.
+
+Howtos:
+- [HOWTO_UPDATE_STANDARDS.md](HOWTO_UPDATE_STANDARDS.md) — add or change TOCH rules
+- [HOWTO_SKILL_CREATOR.md](HOWTO_SKILL_CREATOR.md) — create or improve agent skills
+- [HOWTO_SKILL_VALIDATION.md](HOWTO_SKILL_VALIDATION.md) — validate the standards skill after edits

@@ -122,6 +122,46 @@ Map `[SECTION]` → reference file (edit **and** mirror in [STANDARDS.md](../../
 
 **Checklist:** if the rule affects review gates, add or update the matching row in `reference/07-anti-patterns-dictionary-checklist.md`.
 
+### 4.5. Test prompt ASK (only if `Promote: yes`)
+
+After step 4 completes, ask the user whether to add a validation test prompt for the promoted rule. Use the `AskQuestion` tool when available; otherwise post plain text and **wait** for **Yes** or **Skip**.
+
+**Message template:**
+
+```markdown
+### Test prompt ASK
+
+A new rule was promoted: `STANDARDS:[SECTION]:slug`.
+
+Add a validation test prompt so future skill checks cover this rule?
+
+- **Yes** — append to test catalog + evals.json
+- **Skip** — no test file changes
+```
+
+**If Yes — generate from the promoted rule:**
+
+| Field | Source |
+|-------|--------|
+| Test question | Plain-language **Rule** from the form; prefer a natural dev question (e.g. rule "never use rem for gap" → *"Can I use rem for gap in component SCSS?"*) |
+| Checklist bullets | 2–3 expectations derived from formal rule wording + Rule ID |
+| Target section | Same reference file as step 4 promotion (use the section → file map in step 4) |
+
+**Write to [../toch-standards-skill/SKILL-CREATOR-TEST-PROMPTS.md](../toch-standards-skill/SKILL-CREATOR-TEST-PROMPTS.md):**
+
+- Find the matching `## reference/0N-....md (N)` block for the promoted reference file
+- Append one numbered prompt to the list
+- Append 1–2 bullets to that section's **Passing answer checklist**
+- Bump the count in the section header `(N)` → `(N+1)`
+
+**Write to [../toch-standards-skill/evals/evals.json](../toch-standards-skill/evals/evals.json):**
+
+- Append one object with `id: maxExistingId + 1`
+- `prompt`, `expected_output`, `expectations` (2–3 items; cite Rule ID in at least one)
+- `files: []`
+
+**If Skip:** do not edit test files. Continue to step 5.
+
 ### 5. Changelog
 
 The `## Changelog` in `08-user-amendments.md` tracks **project-only** rule history (Scope: `project-only`). Template-wide promotions are recorded by their edits to `STANDARDS.md` + `reference/01`–`07` and by git history — do **not** log them here.
@@ -144,6 +184,10 @@ Changelog columns:
 
 Reply with: Rule ID, generated formal rule (one line), files changed, whether promoted, and how to cite on future Standards checks (`Follow` / `Ignore`).
 
+If a test prompt was added in step 4.5, include the prompt text and new eval id in the summary.
+
+If promotion touched `reference/*.md`, `SKILL.md`, or `STANDARDS.md`, remind the user that light skill validation should run (toch-standards-skill step 8) and offer to run 3 spot-check evals now (include the new eval if one was added).
+
 ## Rules
 
 - **Never** promote without `Promote: yes` or explicit user confirmation after the proposed diff.
@@ -151,3 +195,5 @@ Reply with: Rule ID, generated formal rule (one line), files changed, whether pr
 - Generated formal wording must match STANDARDS style; preserve the user’s **intent**, not necessarily their exact words.
 - If `Promote: no`, inbox only — include the proposal so the user can promote later with `Promote: yes`.
 - If `Promote: yes` but target section is unclear, ask before editing.
+- **Never** write test prompt files without explicit **Yes** on the step 4.5 Test prompt ASK.
+- If `Promote: no`, skip step 4.5 entirely.
