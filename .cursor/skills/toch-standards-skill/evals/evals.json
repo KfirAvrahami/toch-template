@@ -1,0 +1,126 @@
+{
+  "skill_name": "toch-standards-skill",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "Before coding this Angular change, which versions and dependency rules must I check?",
+      "expected_output": "Agent mentions reading versions from package.json before coding and rejects upgrading without explicit approval.",
+      "files": [],
+      "expectations": [
+        "Mentions reading versions from package.json before coding",
+        "States that dependency/version upgrades require explicit approval"
+      ]
+    },
+    {
+      "id": 2,
+      "prompt": "Which files are protected and require explicit confirmation before editing?",
+      "expected_output": "Agent lists protected infrastructure files (base-api.service.ts, app.routes.ts, etc.) and states they require explicit confirmation.",
+      "files": [],
+      "expectations": [
+        "Lists at least one protected file by name",
+        "States that editing protected files requires explicit user confirmation"
+      ]
+    },
+    {
+      "id": 3,
+      "prompt": "For layout width and height, can I use rem units?",
+      "expected_output": "Agent forbids rem for width/height/margins; recommends avoiding px layout too.",
+      "files": [],
+      "expectations": [
+        "Forbids rem for width/height/margins",
+        "References the SCSS units rule from reference/03"
+      ]
+    },
+    {
+      "id": 4,
+      "prompt": "Is declaring 'private user: AuthUser | null = null' acceptable in a service?",
+      "expected_output": "Agent rejects null initialization; null policy forbids null in app code.",
+      "files": [],
+      "expectations": [
+        "Rejects null initialization",
+        "Cites the null policy (STANDARDS:[NULL-POLICY]) or reference/04"
+      ]
+    },
+    {
+      "id": 5,
+      "prompt": "Can I keep user-visible Hebrew text in the template without adding an i18n key?",
+      "expected_output": "Agent forbids it; i18n is mandatory for every user-visible template string.",
+      "files": [],
+      "expectations": [
+        "Forbids hardcoded visible text without i18n key",
+        "States i18n is mandatory for all user-visible strings"
+      ]
+    },
+    {
+      "id": 6,
+      "prompt": "Should adapter switching use if (environment.production) to pick the real vs mock adapter?",
+      "expected_output": "Agent forbids env-based if switching; adapter choice is via token/providers at route or app level.",
+      "files": [],
+      "expectations": [
+        "Forbids environment.production if-switching for adapters",
+        "States provider choice is route/app-level via injection token"
+      ]
+    },
+    {
+      "id": 7,
+      "prompt": "Which elements must always have a data-testid attribute?",
+      "expected_output": "Agent states interactive and dynamic elements require data-testid; they must be unique.",
+      "files": [],
+      "expectations": [
+        "States interactive and dynamic elements require data-testid",
+        "Mentions testids must be unique"
+      ]
+    },
+    {
+      "id": 8,
+      "prompt": "Can a feature component call HttpClient directly if it's faster to implement that way?",
+      "expected_output": "Agent forbids it; HTTP must go through BaseApiService, not direct HttpClient in feature components.",
+      "files": [],
+      "expectations": [
+        "Forbids direct HttpClient usage in feature components",
+        "States HTTP calls must go through BaseApiService or equivalent base"
+      ]
+    },
+    {
+      "id": 9,
+      "prompt": "Where do project-only conventions go if I choose Project-only (08) during the documentation ASK?",
+      "expected_output": "Agent states project-only rules go to reference/08-user-amendments.md only; not to STANDARDS.md or reference/01–07.",
+      "files": [],
+      "expectations": [
+        "Directs to reference/08-user-amendments.md for project-only rules",
+        "States they do not go into STANDARDS.md or reference/01–07"
+      ]
+    },
+    {
+      "id": 10,
+      "prompt": "After adding CSS mask icons in a feature, what must you ask the user before finishing the task?",
+      "expected_output": "Agent must run Standards documentation ASK and offer Promote to STANDARDS / Project-only (08) / Skip docs.",
+      "files": [],
+      "expectations": [
+        "Identifies the documentation ASK trigger (new pattern not in STANDARDS)",
+        "Offers all three options: Promote to STANDARDS, Project-only (08), Skip docs"
+      ]
+    },
+    {
+      "id": 11,
+      "prompt": "What is the capital of France?",
+      "expected_output": "Agent answers 'Paris' directly without loading TOCH standards or launching a standards check.",
+      "files": [],
+      "expectations": [
+        "Answers Paris without over-triggering TOCH standards workflow",
+        "Does not perform a Standards check or reference STANDARDS.md"
+      ]
+    },
+    {
+      "id": 12,
+      "prompt": "Follow TOCH standards for a new feature component with a service, adapter, and SCSS.",
+      "expected_output": "Agent loads toch-standards-skill, reads relevant references (01, 03, 05), and applies REQUIRED rules for structure, OnPush, standalone, SCSS units, adapter token pattern.",
+      "files": [],
+      "expectations": [
+        "Loads toch-standards-skill and reads relevant reference files",
+        "Applies standalone: true and OnPush requirements",
+        "Applies adapter token pattern (no direct adapter import)"
+      ]
+    }
+  ]
+}

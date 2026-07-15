@@ -1,8 +1,11 @@
 # Prompts for validating `toch-standards-skill` (with skill-creator)
 
-Use these after installing skill-creator. Non-interactive install:
+skill-creator is **already bundled** at [`.agents/skills/skill-creator/`](../../../../.agents/skills/skill-creator/) — no install needed.
 
-`npx skills add https://github.com/anthropics/skills --skill skill-creator -y`
+**Two validation tiers:**
+
+- **Light (default after skill/reference edits):** pick 3 prompts from [`evals/evals.json`](evals/evals.json) matching the changed reference area; answer inline using loaded references; report pass/partial/fail. Ask the agent: *"Run light validation on the standards skill."*
+- **Full regression:** run all prompts below in order (manual scorecard), or ask the agent to run the full skill-creator eval loop ([HOWTO_SKILL_VALIDATION.md](../../../../HOWTO_SKILL_VALIDATION.md)).
 
 Run prompts in order and log results (`expected/unexpected`, `correct/partial/wrong`, `correct/incorrect`).
 

@@ -30,10 +30,6 @@ REQUIRED: For this repo, rules documented here (with a Rule ID) override conflic
 | Date | Rule ID | Promoted | Files touched | Notes |
 |------|---------|----------|---------------|-------|
 | 2026-06-03 | STANDARDS:[PROJECT-AMENDMENTS]:split-variables-and-global, no-h-utils-in-styles-entry | yes | 08-user-amendments.md, src/styles/variables.scss, src/styles/global.scss, src/styles.scss | Split tokens and h-* utilities out of styles.scss entry |
-| 2026-06-04 | STANDARDS:[ICONS]:* (4 rules) | yes | STANDARDS.md, reference/06, SKILL.md, 07, 01 | Code review: CSS mask icons, no inline decorative SVG |
-| 2026-06-04 | STANDARDS:[NAMING]:bem-modifier-single-hyphen, generic-layout-class | yes | STANDARDS.md, reference/04 | Code review: BEM `--` modifiers and prefixed layout classes |
-| 2026-06-04 | STANDARDS:[TYPES]:enum-for-closed-sets | yes | STANDARDS.md, reference/05 | Code review: string enums for closed branching sets |
-| 2026-06-04 | (process) Standards documentation ASK | yes | SKILL.md, toch-standards.mdc, STANDARDS.md [META], reference/01, reference/07 | Required ask before task complete when new conventions introduced |
 
 ---
 

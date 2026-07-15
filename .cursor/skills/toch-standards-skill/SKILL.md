@@ -14,6 +14,17 @@ description: >-
 `.cursor/rules/toch-standards.mdc` has `alwaysApply: true` — load this skill and the relevant
 `reference/*.md` files for **every** task in this repo.
 
+## Repo mode (template vs project)
+
+Detect mode by reading `name` in [package.json](../../../package.json):
+
+| `package.json#name` | Mode | Meaning |
+|---------------------|------|---------|
+| `angular-20-template` | **template** | This is the template source repo; conventions should generally live in `STANDARDS.md` + `reference/01`–`07`. |
+| anything else | **project** | The template was renamed via `npm run initProjName`; app-specific conventions belong in [reference/08-user-amendments.md](reference/08-user-amendments.md). |
+
+The mode biases the **default Scope** when promoting new conventions (see Standards documentation ASK below and the amend skill). The user can always override it explicitly in the review form.
+
 ## When to use
 
 **Required for every code change** in this repository, including:
@@ -114,8 +125,8 @@ After **Follow**: implement per the standard. After **Ignore**: proceed with the
 
 | Option | Meaning |
 |--------|---------|
-| **Promote to STANDARDS** | Run `/toch-standards-review` or [toch-standards-amend skill](../toch-standards-amend-skill/SKILL.md) with plain-language **Rule**, **Scope: template-wide**, **Promote: yes**. |
-| **Project-only (08)** | Same flow with **Scope: project-only** → [08-user-amendments.md](reference/08-user-amendments.md) only (rules for this repo after `initProjName`, not the template source). |
+| **Promote to STANDARDS** | Run `/toch-standards-review` or [toch-standards-amend skill](../toch-standards-amend-skill/SKILL.md) with plain-language **Rule**, **Scope: template-wide**, **Promote: yes**. (default in template mode) |
+| **Project-only (08)** | Same flow with **Scope: project-only** → [08-user-amendments.md](reference/08-user-amendments.md) only (rules for this repo after `initProjName`, not the template source). (default in project mode) |
 | **Skip docs** | No edits to STANDARDS, references, or skill; convention lives in code only. |
 
 **Classification guidance:**
@@ -136,6 +147,7 @@ After **Follow**: implement per the standard. After **Ignore**: proceed with the
 5. **Protected files**: before editing infrastructure files listed in the standards, confirm with the user if the task did not already authorize it (use a Standards check with the relevant Rule ID).
 6. **Done**: run through the checklist in `reference/07-anti-patterns-dictionary-checklist.md` when finishing a substantive task.
 7. **Documentation ASK**: if any trigger in “Standards documentation ASK” fired → ask the user (three options) → only then run amend, update `08` only, or stop without doc edits.
+8. **Skill validation**: if you edited this skill, any `reference/*.md`, or mirrored sections in `STANDARDS.md` → run light validation: pick 3 evals from [`evals/evals.json`](evals/evals.json) whose topic matches changed files, answer each using loaded references, report pass/partial/fail in summary. Full manual regression uses [SKILL-CREATOR-TEST-PROMPTS.md](SKILL-CREATOR-TEST-PROMPTS.md); full skill-creator loop only when the user explicitly asks (see [HOWTO_SKILL_VALIDATION.md](../../../HOWTO_SKILL_VALIDATION.md)).
 
 ## Reference index (read as needed)
 
@@ -152,6 +164,3 @@ After **Follow**: implement per the standard. After **Ignore**: proceed with the
 
 **Update standards:** `/toch-standards-review` or [toch-standards-amend skill](../toch-standards-amend-skill/SKILL.md).
 
-## Skill-creator validation
-
-After creating or editing this skill, use the **skill-creator** skill to sanity-check triggers and coverage (positive prompts, negative prompts, topic spot-checks). See [SKILL-CREATOR-TEST-PROMPTS.md](SKILL-CREATOR-TEST-PROMPTS.md).
