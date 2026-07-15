@@ -1,7 +1,7 @@
 {
-  "locale": "he",
+  "locale": "he-balmas",
   "translations": {
-    "home.welcomeHeading": "PRD",
+    "home.welcomeHeading": "בית",
     "home.description": "דף הבית של תבנית Angular 20.",
     "notFound.code": "404",
     "notFound.message": "הדף לא נמצא.",
