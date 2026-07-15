@@ -1,0 +1,3 @@
+src/app/core/services/auth/adapters/api/ssoAdapter.ts merge=binary 
+src/locale/i18n/he.json merge=binary 
+*.sap.ts merge=binary 

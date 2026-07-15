@@ -7,10 +7,11 @@ A short onboarding guide for starting a new project from the TOCH Angular 20 tem
 ## Before you start
 
 ```bash
-npm run initProjName    # Step 1 — rename the project
-npm install             # Step 2 — run from the repo root
-npm start               # English (source locale) + dev environment
-npm run start:he        # Hebrew UI + dev environment
+npm run initProjName      # Step 1 — rename the project
+npm install               # Step 2 — run from the repo root
+npm start                 # English (source locale) + dev environment
+npm run start:he          # Hebrew UI + dev environment
+npm run start:he-balmas   # Hebrew Balmas UI + dev environment
 ```
 
 > **Important:** Make sure the `@toch/sap-utils/` folder was copied with the template (see [section 4](#4-tochsap-utils-local-package)).
@@ -312,7 +313,7 @@ src/app/features/<feature-name>/
 
 ### Adapter pattern (short)
 
-- Components **never** import `MockAdapter` / `ApiAdapter` directly
+- Components **never** import `adpter.mock` / `adpter.sap` directly
 - The route in `app.routes.ts` sets `providers: [...XxxApiProviders.Api]`
 - The feature service injects a token, not a concrete class
 
