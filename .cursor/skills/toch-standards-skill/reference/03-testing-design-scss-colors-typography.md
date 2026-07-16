@@ -25,7 +25,7 @@ STEP 1 — Check for Figma:
   ASK: "Do you have a Figma link for this feature/project?"
   IF YES:
     - Use the Figma MCP tool to extract: colors, font family, font sizes, spacing, border radii.
-    - Map all colors to CSS custom property tokens in `src/styles.scss`.
+    - Map all colors to CSS custom property tokens in `src/styles/variables.scss`.
     - Do not invent colors — use only what Figma provides.
   IF NO:
     ASK: "What font family should be used?" (wait for answer)
@@ -33,7 +33,7 @@ STEP 1 — Check for Figma:
     FORBIDDEN: Proceed with placeholder or invented colors.
 
 STEP 2 — Define tokens before components:
-  - Write all tokens into `src/styles.scss` `:root` block FIRST.
+  - Write all tokens into `src/styles/variables.scss` `:root` block FIRST.
   - Only then write component SCSS that references those tokens.
 
 ---
@@ -41,8 +41,9 @@ STEP 2 — Define tokens before components:
 ## [SCSS]
 
 REQUIRED — Units:
-  - `width`, `height`, `margin`: use `%`, `vw`, `vh`, `dvh`, `dvw`. FORBIDDEN: `rem` for these.
-  - `padding`, `gap`, `margin`: use `%`, `vw`, `vh`, `dvh`, `dvw`. FORBIDDEN: `rem` for these.
+  - `width`, `height`, `margin`: use `%`, `vw`, `vh`. FORBIDDEN: `rem` for these.
+  - `padding`, `gap`, `margin`: use `%`, `vw`, `vh`. FORBIDDEN: `rem` for these.
+  - FORBIDDEN (STANDARDS:[SCSS]:no-dynamic-viewport-units): Do not use dynamic or per-orientation viewport units (`dvh`, `dvw`, `dvmin`, `dvmax`, `svh`, `svw`, `svmin`, `svmax`, `lvh`, `lvw`, `lvmin`, `lvmax`) anywhere — in `.scss`, inline styles, or design-token values. Use the static equivalents (`vh`, `vw`, `vmin`, `vmax`) instead.
   - Font sizes: use `rem` or `clamp()`.
   - FORBIDDEN: Fixed `px` values for layout dimensions (borders and shadows: `px` is acceptable).
 
@@ -77,7 +78,7 @@ REQUIRED — Component encapsulation:
   - Every component MUST have its own `.scss` file.
   - FORBIDDEN: `styles: [...]` inline array in any component decorator — always use `styleUrl`.
   - DEFAULT: Component styles scoped to the component; avoid global selectors in component stylesheets.
-  - REQUIRED: Use CSS custom properties from `src/styles.scss` — never hardcode colors or spacing in component SCSS.
+  - REQUIRED: Use CSS custom properties from `src/styles/variables.scss` — never hardcode colors or spacing in component SCSS.
 
 REQUIRED — Margins:
   - FORBIDDEN: `margin: 0` or any `margin-*: 0` (including `margin-inline-start: 0`). Remove the rule, it is implicit.
@@ -99,7 +100,7 @@ REQUIRED — RTL:
 
 ## [COLORS]
 
-REQUIRED: All color tokens defined in `src/styles.scss` `:root` block.
+REQUIRED: All color tokens defined in `src/styles/variables.scss` `:root` block.
 
 ### Token scope rules
 Two categories of tokens exist. Use the correct category — do NOT mix them.
@@ -122,11 +123,11 @@ Two categories of tokens exist. Use the correct category — do NOT mix them.
   - `--topbar-bg` / `--topbar-bg-hover` / `--topbar-text` — top-bar component only
   - `--sidebar-bg` / `--sidebar-bg-soft` — side-bar component only
   - `--spinner-ring-color` / `--spinner-track-color` / `--spinner-glow` — spinner/splash only
-  - When adding a new component: define its tokens as `--<component>-<role>` in `src/styles.scss`
+  - When adding a new component: define its tokens as `--<component>-<role>` in `src/styles/variables.scss`
 
 ### Rules
 FORBIDDEN: Generic names like `--color-primary`, `--color-surface`, `--color-on-primary` — these are ambiguous about which component they belong to.
-FORBIDDEN: Reference a color token not defined in `src/styles.scss`.
+FORBIDDEN: Reference a color token not defined in `src/styles/variables.scss`.
 FORBIDDEN: Use `rgba(...)` or `#hex` directly in component SCSS.
 REQUIRED: Each feature should be potentially standalone — avoid reusing component-scoped tokens across features. If two components share a color, promote it to a generic token with a semantic name.
 
@@ -135,7 +136,7 @@ REQUIRED: Each feature should be potentially standalone — avoid reusing compon
 ## [TYPOGRAPHY]
 
 REQUIRED: Font family set once on `html, body` in `src/styles.scss`.
-REQUIRED: Import custom fonts via `@import url(...)` at top of `src/styles.scss`.
+REQUIRED: Use only self-hosted or system fonts. FORBIDDEN: `@import url(external)` — the app runs on a private network with no internet access. Self-host any custom `.woff2` under `src/assets/fonts/` and reference it with `src: url(...)` pointing to the local asset.
 REQUIRED: Font sizes use `rem` (base = browser default 16px).
 REQUIRED: Heading sizes use `clamp(minRem, preferredVw, maxRem)` for fluid scaling.
 FORBIDDEN: Set `font-family` in a component SCSS file.

@@ -18,7 +18,7 @@ This section lists real mistakes. The AI must detect and refuse these patterns.
 /* FORBIDDEN — px layout */
 .sidebar { width: 240px; height: 800px; }
 /* REQUIRED */
-.sidebar { width: 15rem; height: calc(100dvh - 6rem); }
+.sidebar { width: 15rem; height: calc(100vh - 6rem); }
 
 /* FORBIDDEN — negative margin layout hack */
 .card { margin-top: -20px; }
@@ -110,9 +110,9 @@ FORBIDDEN: he.json key without corresponding `i18n="@@key"` in a template or `$l
 FORBIDDEN: showTopBar = signal(true) or showSideBar = signal(true) when the bar is not
   actually rendered and populated in the application.
 FORBIDDEN: Fixed-pixel "app window" wrapper (e.g. width: 1080px; height: 740px) — use
-  full-viewport layout (100dvw / 100dvh) instead.
+  full-viewport layout (100vw / 100vh) instead.
 FORBIDDEN: A feature-owned fixed header without a corresponding --shell-titlebar-height
-  token in src/styles.scss, or without padding-top on the content area below it.
+  token in src/styles/variables.scss, or without padding-top on the content area below it.
 ```
 
 ### Dynamic Styles
@@ -122,7 +122,7 @@ FORBIDDEN: style="top: 12px; right: 8px;" inline attributes — move to SCSS mod
 FORBIDDEN: [ngStyle] directive
 FORBIDDEN: [ngClass] directive — use [class.modifier] instead
 FORBIDDEN: Hardcoded hex/rgb values in TypeScript methods returning style strings —
-  use CSS token references (var(--token)) and define tokens in src/styles.scss
+  use CSS token references (var(--token)) and define tokens in src/styles/variables.scss
 ```
 
 ### Lifecycle / Subscriptions

@@ -29,23 +29,9 @@ REQUIRED: For this repo, rules documented here (with a Rule ID) override conflic
 
 | Date | Rule ID | Promoted | Files touched | Notes |
 |------|---------|----------|---------------|-------|
-| 2026-06-03 | STANDARDS:[PROJECT-AMENDMENTS]:split-variables-and-global, no-h-utils-in-styles-entry | yes | 08-user-amendments.md, src/styles/variables.scss, src/styles/global.scss, src/styles.scss | Split tokens and h-* utilities out of styles.scss entry |
 
 ---
 
 ## Project-only rules
 
-REQUIRED (STANDARDS:[PROJECT-AMENDMENTS]:split-variables-and-global): Define CSS custom properties (`:root`, `[data-theme]`) in `src/styles/variables.scss`. Define shared utility classes in `src/styles/global.scss` (only classes the template or app actually uses). Keep `src/styles.scss` as the global entry file: `@use` partials plus document-level base rules (`html`, `body`, box-sizing).
-
-FORBIDDEN (STANDARDS:[PROJECT-AMENDMENTS]:no-h-utils-in-styles-entry): Define utility classes or `:root` token blocks directly in `src/styles.scss`.
-
-EXAMPLE (correct):
-
-```scss
-// src/styles.scss
-@use './styles/variables';
-@use './styles/global';
-@use './styles/overlay';
-```
-
-ANTI-PATTERN: Placing utility class blocks or `:root { --token: … }` in `src/styles.scss` instead of the dedicated partials.
+_Add project-specific rules here with Rule IDs after running `initProjName`._

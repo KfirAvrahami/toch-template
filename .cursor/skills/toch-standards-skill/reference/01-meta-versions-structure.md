@@ -228,14 +228,14 @@ FORBIDDEN: Leave `showTopBar = signal(true)` or `showSideBar = signal(true)` if 
   not visibly used and populated in the running application.
 
 REQUIRED: A feature-owned fixed header MUST occupy the same z-index and height zone as the
-  shared `TopBarComponent` would (`z-index: 1000`, height defined via a token in `src/styles.scss`).
+  shared `TopBarComponent` would (`z-index: 100`, height defined via a token in `src/styles/variables.scss`).
   Define the token as `--shell-titlebar-height` in `:root`.
 
 REQUIRED: `window-body` or equivalent content area MUST add `padding-top: var(--shell-titlebar-height)`
   to avoid content being hidden under the fixed header.
 
 ANTI-PATTERN: Wrapping the entire application in a fake "window" div (`.fake-window`, `.app-window`)
-  with a fixed `px` width and height. Use full-viewport layout (`100dvw` / `100dvh`) instead.
+  with a fixed `px` width and height. Use full-viewport layout (`100vw` / `100vh`) instead.
 
 ---
 

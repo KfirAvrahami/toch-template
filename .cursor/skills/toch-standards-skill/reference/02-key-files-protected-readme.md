@@ -7,12 +7,29 @@
 ## [KEY-FILES]
 
 ### src/styles.scss
-- PURPOSE: Single source of all CSS custom properties (design tokens).
-- REQUIRED: All color, typography, and spacing tokens defined here as `:root { --token: value }`.
-- FORBIDDEN: Hardcode any design value (color, font, size) in a component SCSS file.
-- REQUIRED: Import Google Fonts here via `@import url(...)` if a custom font is used.
+- PURPOSE: Global entry file. Uses `@use` to pull in partials; contains only document-level base rules (`html`, `body`, box-sizing, `@import` for fonts, `direction: rtl`).
+- REQUIRED (STANDARDS:[SCSS]:split-variables-and-global): Keep this file as the entry point only — `@use` partials, plus `html`/`body` base rules.
+- FORBIDDEN (STANDARDS:[SCSS]:no-h-utils-in-styles-entry): Do not define utility classes or `:root` token blocks directly in `src/styles.scss` — place them in the dedicated partials below.
 - REQUIRED: Set `direction: rtl` on `html, body` for RTL projects.
 - REQUIRED: Set `font-family` on `html, body` here — never in a component.
+- REQUIRED: Use only self-hosted or system fonts — no `@import url(external)` calls. This project deploys to a private network with no internet access.
+- EXAMPLE:
+  ```scss
+  // src/styles.scss
+  @use './styles/variables';
+  @use './styles/global';
+  @use './styles/overlay';
+  ```
+
+### src/styles/variables.scss
+- PURPOSE: Single source of all CSS custom properties (design tokens).
+- REQUIRED: All color, typography, and spacing tokens defined here as `:root { --token: value }` and `[data-theme] { --token: value }`.
+- FORBIDDEN: Hardcode any design value (color, font, size) in a component SCSS file.
+
+### src/styles/global.scss
+- PURPOSE: Shared utility classes used across multiple features (e.g. scroll helpers, animation utilities, shared layout helpers).
+- REQUIRED: Only classes the template or app actually uses.
+- FORBIDDEN: Hardcode component-specific styles here — those belong in the component's own `.scss` file.
 
 ### src/app/base/base.component.ts
 - PURPOSE: Abstract directive providing RxJS lifecycle streams.
