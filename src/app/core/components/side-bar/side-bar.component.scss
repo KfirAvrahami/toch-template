@@ -1,10 +1,10 @@
 .side-bar {
   position: fixed;
-  inset-inline-end: 2%;
+  inset-inline-start: 2%;
   inset-block-start: calc(var(--shell-titlebar-height) + 2%);
   width: 16%;
   min-width: 12rem;
-  height: calc(100dvh - var(--shell-titlebar-height) - 4%);
+  height: calc(100vh - var(--shell-titlebar-height) - 4%);
   border-radius: 1rem;
   background: var(--sidebar-bg);
   box-shadow: 0 0.75rem 1.875rem var(--color-shadow-soft);

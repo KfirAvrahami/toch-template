@@ -224,14 +224,14 @@ FORBIDDEN: Leave `showTopBar = signal(true)` or `showSideBar = signal(true)` if 
   not visibly used and populated in the running application.
 
 REQUIRED: A feature-owned fixed header MUST occupy the same z-index and height zone as the
-  shared `TopBarComponent` would (`z-index: 1000`, height defined via a token in `src/styles.scss`).
+  shared `TopBarComponent` would (`z-index: 100`, height defined via a token in `src/styles/variables.scss`).
   Define the token as `--shell-titlebar-height` in `:root`.
 
 REQUIRED: `window-body` or equivalent content area MUST add `padding-top: var(--shell-titlebar-height)`
   to avoid content being hidden under the fixed header.
 
 ANTI-PATTERN: Wrapping the entire application in a fake "window" div (`.fake-window`, `.app-window`)
-  with a fixed `px` width and height. Use full-viewport layout (`100dvw` / `100dvh`) instead.
+  with a fixed `px` width and height. Use full-viewport layout (`100vw` / `100vh`) instead.
 
 ---
 
@@ -276,12 +276,29 @@ export class MyComponent extends BaseComponent {
 ## [KEY-FILES]
 
 ### src/styles.scss
-- PURPOSE: Single source of all CSS custom properties (design tokens).
-- REQUIRED: All color, typography, and spacing tokens defined here as `:root { --token: value }`.
-- FORBIDDEN: Hardcode any design value (color, font, size) in a component SCSS file.
-- REQUIRED: Import Google Fonts here via `@import url(...)` if a custom font is used.
+- PURPOSE: Global entry file. Uses `@use` to pull in partials; contains only document-level base rules (`html`, `body`, box-sizing, `@import` for fonts, `direction: rtl`).
+- REQUIRED (STANDARDS:[SCSS]:split-variables-and-global): Keep this file as the entry point only — `@use` partials, plus `html`/`body` base rules.
+- FORBIDDEN (STANDARDS:[SCSS]:no-h-utils-in-styles-entry): Do not define utility classes or `:root` token blocks directly in `src/styles.scss` — place them in the dedicated partials below.
 - REQUIRED: Set `direction: rtl` on `html, body` for RTL projects.
 - REQUIRED: Set `font-family` on `html, body` here — never in a component.
+- REQUIRED: Use only self-hosted or system fonts — no `@import url(external)` calls. This project deploys to a private network with no internet access.
+- EXAMPLE:
+  ```scss
+  // src/styles.scss
+  @use './styles/variables';
+  @use './styles/global';
+  @use './styles/overlay';
+  ```
+
+### src/styles/variables.scss
+- PURPOSE: Single source of all CSS custom properties (design tokens).
+- REQUIRED: All color, typography, and spacing tokens defined here as `:root { --token: value }` and `[data-theme] { --token: value }`.
+- FORBIDDEN: Hardcode any design value (color, font, size) in a component SCSS file.
+
+### src/styles/global.scss
+- PURPOSE: Shared utility classes used across multiple features (e.g. scroll helpers, animation utilities, shared layout helpers).
+- REQUIRED: Only classes the template or app actually uses.
+- FORBIDDEN: Hardcode component-specific styles here — those belong in the component's own `.scss` file.
 
 ### src/app/base/base.component.ts
 - PURPOSE: Abstract directive providing RxJS lifecycle streams.
@@ -390,7 +407,7 @@ STEP 1 — Check for Figma:
   ASK: "Do you have a Figma link for this feature/project?"
   IF YES:
     - Use the Figma MCP tool to extract: colors, font family, font sizes, spacing, border radii.
-    - Map all colors to CSS custom property tokens in `src/styles.scss`.
+    - Map all colors to CSS custom property tokens in `src/styles/variables.scss`.
     - Do not invent colors — use only what Figma provides.
   IF NO:
     ASK: "What font family should be used?" (wait for answer)
@@ -398,7 +415,7 @@ STEP 1 — Check for Figma:
     FORBIDDEN: Proceed with placeholder or invented colors.
 
 STEP 2 — Define tokens before components:
-  - Write all tokens into `src/styles.scss` `:root` block FIRST.
+  - Write all tokens into `src/styles/variables.scss` `:root` block FIRST.
   - Only then write component SCSS that references those tokens.
 
 ---
@@ -406,8 +423,9 @@ STEP 2 — Define tokens before components:
 ## [SCSS]
 
 REQUIRED — Units:
-  - `width`, `height`, `margin`: use `%`, `vw`, `vh`, `dvh`, `dvw`. FORBIDDEN: `rem` for these.
-  - `padding`, `gap`, `margin`: use `%`, `vw`, `vh`, `dvh`, `dvw`. FORBIDDEN: `rem` for these.
+  - `width`, `height`, `margin`: use `%`, `vw`, `vh`. FORBIDDEN: `rem` for these.
+  - `padding`, `gap`, `margin`: use `%`, `vw`, `vh`. FORBIDDEN: `rem` for these.
+  - FORBIDDEN (STANDARDS:[SCSS]:no-dynamic-viewport-units): Do not use dynamic or per-orientation viewport units (`dvh`, `dvw`, `dvmin`, `dvmax`, `svh`, `svw`, `svmin`, `svmax`, `lvh`, `lvw`, `lvmin`, `lvmax`) anywhere — in `.scss`, inline styles, or design-token values. Use the static equivalents (`vh`, `vw`, `vmin`, `vmax`) instead.
   - Font sizes: use `rem` or `clamp()`.
   - FORBIDDEN: Fixed `px` values for layout dimensions (borders and shadows: `px` is acceptable).
 
@@ -442,7 +460,7 @@ REQUIRED — Component encapsulation:
   - Every component MUST have its own `.scss` file.
   - FORBIDDEN: `styles: [...]` inline array in any component decorator — always use `styleUrl`.
   - DEFAULT: Component styles scoped to the component; avoid global selectors in component stylesheets.
-  - REQUIRED: Use CSS custom properties from `src/styles.scss` — never hardcode colors or spacing in component SCSS.
+  - REQUIRED: Use CSS custom properties from `src/styles/variables.scss` — never hardcode colors or spacing in component SCSS.
 
 REQUIRED — Margins:
   - FORBIDDEN: `margin: 0` or any `margin-*: 0` (including `margin-inline-start: 0`). Remove the rule, it is implicit.
@@ -464,7 +482,7 @@ REQUIRED — RTL:
 
 ## [COLORS]
 
-REQUIRED: All color tokens defined in `src/styles.scss` `:root` block.
+REQUIRED: All color tokens defined in `src/styles/variables.scss` `:root` block.
 
 ### Token scope rules
 Two categories of tokens exist. Use the correct category — do NOT mix them.
@@ -488,11 +506,11 @@ Two categories of tokens exist. Use the correct category — do NOT mix them.
   - `--topbar-bg` / `--topbar-bg-hover` / `--topbar-text` — top-bar component only
   - `--sidebar-bg` / `--sidebar-bg-soft` — side-bar component only
   - `--spinner-ring-color` / `--spinner-track-color` / `--spinner-glow` — spinner/splash only
-  - When adding a new component: define its tokens as `--<component>-<role>` in `src/styles.scss`
+  - When adding a new component: define its tokens as `--<component>-<role>` in `src/styles/variables.scss`
 
 ### Rules
 FORBIDDEN: Generic names like `--color-primary`, `--color-surface`, `--color-on-primary` — these are ambiguous about which component they belong to.
-FORBIDDEN: Reference a color token not defined in `src/styles.scss`.
+FORBIDDEN: Reference a color token not defined in `src/styles/variables.scss`.
 FORBIDDEN: Use `rgba(...)` or `#hex` directly in component SCSS.
 REQUIRED: Each feature should be potentially standalone — avoid reusing component-scoped tokens across features. If two components share a color, promote it to a generic token with a semantic name.
 
@@ -501,7 +519,7 @@ REQUIRED: Each feature should be potentially standalone — avoid reusing compon
 ## [TYPOGRAPHY]
 
 REQUIRED: Font family set once on `html, body` in `src/styles.scss`.
-REQUIRED: Import custom fonts via `@import url(...)` at top of `src/styles.scss`.
+REQUIRED: Use only self-hosted or system fonts. FORBIDDEN: `@import url(external)` — the app runs on a private network with no internet access. Self-host any custom `.woff2` under `src/assets/fonts/` and reference it with `src: url(...)` pointing to the local asset.
 REQUIRED: Font sizes use `rem` (base = browser default 16px).
 REQUIRED: Heading sizes use `clamp(minRem, preferredVw, maxRem)` for fluid scaling.
 FORBIDDEN: Set `font-family` in a component SCSS file.
@@ -1136,7 +1154,7 @@ REQUIRED: `[class.modifier]` bindings are acceptable for boolean state classes:
 
 REQUIRED: Hardcoded color hex values inside TypeScript component methods (e.g. syntax
   highlighters returning color strings) MUST use CSS token references (`var(--token)`)
-  rather than hex/rgb literals. Define the tokens in `src/styles.scss`.
+  rather than hex/rgb literals. Define the tokens in `src/styles/variables.scss`.
 
 ---
 
@@ -1173,7 +1191,7 @@ This section lists real mistakes. The AI must detect and refuse these patterns.
 /* FORBIDDEN — px layout */
 .sidebar { width: 240px; height: 800px; }
 /* REQUIRED */
-.sidebar { width: 15rem; height: calc(100dvh - 6rem); }
+.sidebar { width: 15rem; height: calc(100vh - 6rem); }
 
 /* FORBIDDEN — negative margin layout hack */
 .card { margin-top: -20px; }
@@ -1265,9 +1283,9 @@ FORBIDDEN: he.json key without corresponding `i18n="@@key"` in a template or `$l
 FORBIDDEN: showTopBar = signal(true) or showSideBar = signal(true) when the bar is not
   actually rendered and populated in the application.
 FORBIDDEN: Fixed-pixel "app window" wrapper (e.g. width: 1080px; height: 740px) — use
-  full-viewport layout (100dvw / 100dvh) instead.
+  full-viewport layout (100vw / 100vh) instead.
 FORBIDDEN: A feature-owned fixed header without a corresponding --shell-titlebar-height
-  token in src/styles.scss, or without padding-top on the content area below it.
+  token in src/styles/variables.scss, or without padding-top on the content area below it.
 ```
 
 ---

@@ -36,9 +36,6 @@ def generate_html(data: dict, auto_refresh: bool = False, skill_name: str = "") 
 <head>
     <meta charset="utf-8">
 """ + refresh_tag + """    <title>""" + title_prefix + """Skill Description Optimization</title>
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@500;600&family=Lora:wght@400;500&display=swap" rel="stylesheet">
     <style>
         body {
             font-family: 'Lora', Georgia, serif;

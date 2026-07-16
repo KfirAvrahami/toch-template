@@ -1,11 +1,6 @@
 :host {
   display: block;
-  min-height: 100dvh;
   background: var(--color-bg);
-}
-
-.layout-shell {
-  min-height: 100dvh;
 }
 
 .layout-shell.with-top-bar {
@@ -17,11 +12,11 @@
 }
 
 .main-content.with-sidebar {
-  margin-inline-end: 18%;
+  margin-inline-start: 18%;
 }
 
 @media (max-width: 60rem) {
   .main-content.with-sidebar {
-    margin-inline-end: 0;
+    margin-inline-start: 0;
   }
 }
