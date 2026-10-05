@@ -16,8 +16,8 @@ adapters/
   interface.ts     — defines IFeatureAdapter
   providers.ts     — InjectionToken + Mock/Api provider arrays
   api/
-    mockAdapter.ts — implements IFeatureAdapter with hardcoded data
-    apiAdapter.ts  — implements IFeatureAdapter calling SAP via BaseSapApiService
+    adapter.mock.ts — implements IFeatureAdapter with hardcoded data
+    adapter.sap.ts  — implements IFeatureAdapter calling SAP via BaseSapApiService
 ```
 
 ### interface.ts pattern:
@@ -63,12 +63,12 @@ export class HomeService {
 { path: 'home', providers: [...HomeProviders.Api], loadComponent: ... }
 ```
 
-FORBIDDEN: Import `MockAdapter` or `ApiAdapter` class directly in a component or service.
+FORBIDDEN: Import the `adapter.mock` or `adapter.sap` class directly in a component or service.
 FORBIDDEN: Use `if (environment.production)` to switch adapters — use the provider pattern.
 FORBIDDEN: Add an adapter discriminator field (e.g. `adapter: 'mock' | 'api'`) to result interfaces unless the consumer explicitly needs to distinguish the source. The adapter pattern's purpose is transparency — the consumer should not know or care which adapter is active.
-REQUIRED: `mockAdapter.ts` returns data from `<feature>-mock.data.ts` — never inline mock data in the adapter.
+REQUIRED: `adapter.mock.ts` returns data from `<feature>-mock.data.ts` — never inline mock data in the adapter.
 REQUIRED: SAP date strings in mock data use the real OData format: `/Date(timestamp)/`.
-REQUIRED: `apiAdapter.ts` extends `BaseSapApiService` and sets `protected readonly service = 'ZREAL_SRV'`.
+REQUIRED: `adapter.sap.ts` extends `BaseSapApiService` and sets `protected readonly service = 'ZREAL_SRV'`.
 
 ---
 

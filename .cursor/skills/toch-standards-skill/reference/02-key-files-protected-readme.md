@@ -97,6 +97,53 @@ RULE: If you believe a change to one of these files is needed, stop and ask the 
 
 ---
 
+## [BUILD-DEPLOY]
+
+PURPOSE: These projects ship to SAP as a BSP application (no Node runtime on the server). The Angular
+  app is built to static files and uploaded to the SAP Web Repository via Grunt. Dev runs locally and
+  proxies data calls to a SAP system.
+
+### Build
+REQUIRED: Production build is `ng build`; the deployable output is the localized browser bundle,
+  `dist/<project-name>/browser/<lang>` (e.g. `.../browser/he`). The deploy task uploads that folder, not `dist/` root.
+FORBIDDEN: Hand-edit anything under `dist/` — it is generated.
+
+### Dev serve (against SAP)
+DEFAULT: Local dev uses Grunt with `jit-grunt` and `grunt-connect-proxy` to serve the app and proxy
+  OData calls to a SAP system, avoiding CORS. Configure under `grunt.initConfig({ settings: ... })`:
+```js
+settings: {
+  connect: { host: 'localhost', port: 5050 },     // local dev server
+  proxy:   { host: 'digital-dev', port: '443' },   // SAP system the OData calls are proxied to
+  upload:  { username: '', password: '', hostname: 'https://digital-dev',
+             bsp_application: 'ZMYAPP', bsp_application_description: 'BSP application for my app',
+             package: 'ZMYAPP', change_request_id: '' }
+}
+```
+
+### Deploy (SAP BSP upload)
+REQUIRED: Deploy with `grunt-nwabap-ui5uploader`. The BSP container (`bsp_application`), `package`, and
+  transport (`change_request_id` / `--tr`) identify the target; `useStrictSSL: false` for the on-prem server.
+REQUIRED: Credentials and transport number are passed at invocation (`grunt deploy --user=X --pass=Y --tr=Z`
+  via `grunt.option(...)`), NEVER hard-coded or committed. `username`/`password` stay empty in the repo.
+
+REQUIRED (SAP S/4HANA 2023): The newer uploader needs the Ui5 repository marker files in `resources.src`,
+  or binary/text assets upload incorrectly. Use the array form, not a bare glob:
+```js
+// S/4HANA 2023 — REQUIRED:
+resources: {
+  cwd: 'dist/<project-name>/browser/he',
+  src: ['**/*.*', '.Ui5RepositoryBinaryFiles', '.Ui5RepositoryTextFiles']
+}
+// FORBIDDEN on S/4HANA 2023 (old form — breaks binary/text upload):
+// src: '**/*.*'
+```
+NOTE: A working S/4HANA-2023 Gruntfile reference lives in the `zcheckit_angular` project.
+
+ANTI-PATTERN: Committing real SAP hostnames, usernames, passwords, or transport numbers to the repo.
+
+---
+
 ## [README]
 
 REQUIRED: Generate `README.md` at the start of every new project.

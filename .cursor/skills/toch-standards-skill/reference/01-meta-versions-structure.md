@@ -6,7 +6,7 @@
 
 # STANDARDS — AI Development Rules
 # Angular / TypeScript / SAP OData Projects
-# Version: 1.0 | Template: angular-20-template
+# Version: 1.1 | Template: angular-20-template
 #
 # USAGE FOR AI:
 #   - Read this file in full before starting any new project or feature.
@@ -22,10 +22,10 @@
 
 ## [META] — Document conventions
 
-- Section tags: [META] [VERSIONS] [FORMATTING] [COMPONENT-PATTERNS] [STRUCTURE] [IMPORTS] [LAYOUT] [LIFECYCLE] [KEY-FILES] [README] [TESTING-UNIT]
+- Section tags: [META] [VERSIONS] [FORMATTING] [COMPONENT-PATTERNS] [STRUCTURE] [IMPORTS] [LAYOUT] [LIFECYCLE] [KEY-FILES] [PROTECTED-FILES] [BUILD-DEPLOY] [README] [TESTING-UNIT]
   [DESIGN-SYSTEM] [SCSS] [COLORS] [TYPOGRAPHY] [NAMING] [NULL-POLICY] [I18N]
-  [ADAPTER-PATTERN] [CONSTANTS] [COMMENTS] [TESTIDS] [ICONS] [DYNAMIC-STYLES] [PLAYWRIGHT] [ANTI-PATTERNS]
-  [PROJECT-AMENDMENTS]
+  [ADAPTER-PATTERN] [CONSTANTS] [COMMENTS] [TESTIDS] [HTML-TEMPLATES] [ICONS] [DYNAMIC-STYLES] [PLAYWRIGHT] [ANTI-PATTERNS]
+  [DICTIONARY] [PROJECT-AMENDMENTS]
 - Each section is self-contained. Load only what you need per task.
 - Rules are written as: REQUIRED / FORBIDDEN / ASK / DEFAULT / EXAMPLE / ANTI-PATTERN.
 - "Feature" = one route/page of the application (e.g. home, activations, archive).
@@ -112,10 +112,16 @@ FORBIDDEN: Deviate from this structure without explicit user approval.
 
 ```
 src/
+  main.ts                       — bootstrapApplication(App, appConfig)
+  index.html                    — document shell (do not add app markup here)
   polyfills.ts                  — @angular/localize/init import (do not remove)
-  styles.scss                   — global CSS variables and base styles only
+  styles.scss                   — global entry: @use the files in styles/ + base resets only
   styles/
+    variables.scss              — :root design tokens (colors, spacing, radii) — light + dark
+    global.scss                 — app-wide base styles / shared utility classes
     overlay.scss                — CDK overlay styles
+  types/
+    <name>.d.ts                 — ambient type declarations (e.g. @toch/sap-utils typings)
   locale/
     i18n/
       he.json                   — Hebrew translations (Angular JSON format)
@@ -123,6 +129,8 @@ src/
     fonts/
       material-icons/
         index.css
+    icons/
+      <name>.svg                — SVG icons registered via MatIconRegistry (see icon-registry.service)
   app/
     app.ts                      — root component, AuthProviders, shell signals
     app.html                    — shell layout: top-bar, side-bar, router-outlet
@@ -137,6 +145,7 @@ src/
       utility.types.ts          — shared utility types
       utilities.ts              — shared utility functions
     core/
+      constants.ts              — app-level constants (SAP service/entity-set names, magic numbers)
       components/
         top-bar/
           top-bar.component.ts
@@ -152,14 +161,15 @@ src/
       interceptors/
         cache.interceptor.ts
       services/
+        icon-registry.service.ts — registers assets/icons/*.svg with MatIconRegistry at bootstrap
         auth/
           auth.service.ts
           adapters/
             interface.ts
             providers.ts
             api/
-              mockAdapter.ts
-              ssoAdapter.ts
+              mockAdapter.ts      — (legacy name; see adapter-naming note under [STRUCTURE] RULES)
+              ssoAdapter.ts       — (legacy name; see adapter-naming note under [STRUCTURE] RULES)
         loading.service.ts
         logger.service.ts
         splash-screen.service.ts
@@ -167,7 +177,8 @@ src/
       <feature-name>/
         index.ts                — barrel: export { FeatureComponent } from './pages/...'
         types.ts                — all interfaces, enums, type aliases for this feature
-        home-mock.data.ts       — mock data array (only if feature has mock data)
+                                  (large features may use a types/ folder of barrels instead)
+        <feature>-mock.data.ts  — mock data array (only if feature has mock data) — see RULES
         pages/
           <feature>.component.ts
           <feature>.component.html
@@ -180,8 +191,8 @@ src/
           interface.ts          — IFeatureAdapter interface
           providers.ts          — InjectionToken + Mock/Api provider arrays
           api/
-            mockAdapter.ts
-            apiAdapter.ts
+            adapter.mock.ts
+            adapter.sap.ts
     shared/
       pipes/
         <name>.pipe.ts
@@ -194,10 +205,20 @@ src/
 ```
 
 RULES:
+- REQUIRED: The routed component of a feature lives in `pages/<feature>.component.{ts,html,scss}`.
+  FORBIDDEN: Place the routed component file at the feature root (e.g. `features/home/home.component.ts`) — it must be under `pages/`.
 - Every feature that reads or writes data MUST have an `adapters/` folder.
 - Feature state (loading, data, error) lives in `services/<feature>.service.ts`, not in the component.
 - `index.ts` barrel exports only the routed component — nothing else.
 - `types.ts` contains ALL TypeScript types for that feature. No inline type declarations in components.
+  A feature with a large/structured type surface MAY use a `types/` folder (e.g. `types/<name>.type.ts` + an
+  `index.ts` barrel of enums) in place of a single `types.ts` — but never both for the same feature.
+- REQUIRED: A feature with mock data has exactly ONE mock-data file, `<feature>-mock.data.ts` at the feature root.
+  FORBIDDEN: Keep a second copy inside `adapters/api/` — the mock adapter imports the single root file.
+- ADAPTER NAMING: Feature data adapters are `adapters/api/adapter.mock.ts` and `adapters/api/adapter.sap.ts`
+  (source as the suffix). The `core/services/auth` adapters predate this convention and still use the legacy
+  `mockAdapter.ts` / `ssoAdapter.ts` names; new adapters MUST use the `adapter.<source>.ts` form, and auth
+  SHOULD be renamed to `adapter.mock.ts` / `adapter.sso.ts` when next touched.
 - Shell components (top-bar, side-bar) live in `core/components/`, never in `features/`.
 - Shared pipes, directives, and components used across 2+ features go in `shared/`.
 - A component used in only one feature stays inside that feature's `components/` folder.
