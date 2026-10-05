@@ -63,7 +63,7 @@ export class HomeService {
 { path: 'home', providers: [...HomeProviders.Api], loadComponent: ... }
 ```
 
-FORBIDDEN: Import the `adapter.mock` or `adapter.sap` class directly in a component or service.
+FORBIDDEN: Import a concrete `adapter.mock.ts` / `adapter.sap.ts` class directly in a component or service — always inject via the token.
 FORBIDDEN: Use `if (environment.production)` to switch adapters — use the provider pattern.
 FORBIDDEN: Add an adapter discriminator field (e.g. `adapter: 'mock' | 'api'`) to result interfaces unless the consumer explicitly needs to distinguish the source. The adapter pattern's purpose is transparency — the consumer should not know or care which adapter is active.
 REQUIRED: `adapter.mock.ts` returns data from `<feature>-mock.data.ts` — never inline mock data in the adapter.

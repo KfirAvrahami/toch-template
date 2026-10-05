@@ -100,8 +100,8 @@ RULE: If you believe a change to one of these files is needed, stop and ask the 
 ## [BUILD-DEPLOY]
 
 PURPOSE: These projects ship to SAP as a BSP application (no Node runtime on the server). The Angular
-  app is built to static files and uploaded to the SAP Web Repository via Grunt. Dev runs locally and
-  proxies data calls to a SAP system.
+  app is built to static files and uploaded to the SAP UI5 ABAP repository via Grunt. Dev runs locally
+  and proxies OData calls to a SAP gateway.
 
 ### Build
 REQUIRED: Production build is `ng build`; the deployable output is the localized browser bundle,
@@ -109,35 +109,52 @@ REQUIRED: Production build is `ng build`; the deployable output is the localized
 FORBIDDEN: Hand-edit anything under `dist/` — it is generated.
 
 ### Dev serve (against SAP)
-DEFAULT: Local dev uses Grunt with `jit-grunt` and `grunt-connect-proxy` to serve the app and proxy
-  OData calls to a SAP system, avoiding CORS. Configure under `grunt.initConfig({ settings: ... })`:
-```js
-settings: {
-  connect: { host: 'localhost', port: 5050 },     // local dev server
-  proxy:   { host: 'digital-dev', port: '443' },   // SAP system the OData calls are proxied to
-  upload:  { username: '', password: '', hostname: 'https://digital-dev',
-             bsp_application: 'ZMYAPP', bsp_application_description: 'BSP application for my app',
-             package: 'ZMYAPP', change_request_id: '' }
+DEFAULT: Local dev is `ng serve` with an Angular proxy config (`proxy.config.json`, referenced by the
+  `serve` target's `proxyConfig` in `angular.json`) to forward OData calls to a SAP gateway and avoid CORS.
+  Keep the real gateway host OUT of the committed file — use a placeholder:
+```json
+{
+  "/api": {
+    "target": "https://your-sap-gateway-host.example.com",
+    "secure": true,
+    "changeOrigin": true,
+    "pathRewrite": { "^/api": "/sap/opu/odata/sap" }
+  }
 }
 ```
 
 ### Deploy (SAP BSP upload)
-REQUIRED: Deploy with `grunt-nwabap-ui5uploader`. The BSP container (`bsp_application`), `package`, and
-  transport (`change_request_id` / `--tr`) identify the target; `useStrictSSL: false` for the on-prem server.
-REQUIRED: Credentials and transport number are passed at invocation (`grunt deploy --user=X --pass=Y --tr=Z`
-  via `grunt.option(...)`), NEVER hard-coded or committed. `username`/`password` stay empty in the repo.
+REQUIRED: Deploy with `grunt-nwabap-ui5uploader` (modern `conn` / `auth` / `ui5` / `resources` API).
+  `bspcontainer` + `package` + transport (`transportno` / `--tr`) identify the target; set
+  `useStrictSSL: false` for an on-prem server with a self-signed certificate.
+REQUIRED: Credentials and transport are passed at invocation (`grunt deploy --user=X --pass=Y --tr=Z`
+  via `grunt.option(...)`), NEVER hard-coded or committed.
+```js
+nwabap_ui5uploader: {
+  options: {
+    conn: { server: '<%= settings.upload.hostname %>', useStrictSSL: false },
+    auth: { user: '<%= settings.upload.username %>', pwd: '<%= settings.upload.password %>' }
+  },
+  upload_build: {
+    options: {
+      ui5: {
+        package: 'ZMYAPP', bspcontainer: 'ZMYAPP', bspcontainer_text: 'BSP application for my app',
+        transportno: '<%= settings.upload.change_request_id %>', create_transport: false, language: 'HE'
+      },
+      resources: {
+        cwd: 'dist/<project-name>/browser/he',
+        src: ['**/*.*', '.Ui5RepositoryBinaryFiles', '.Ui5RepositoryTextFiles']
+      }
+    }
+  }
+}
+```
 
 REQUIRED (SAP S/4HANA 2023): If the upload rejects a file whose type the ABAP repository cannot
   classify (error `/UI5/UI5_REP_LOAD/072` — "Type of file ... is unknown"), hand-author the uploader's
   marker files listing the offending relative paths — `.Ui5RepositoryBinaryFiles` (binary) and
-  `.Ui5RepositoryTextFiles` (text) — in the build output, and include them in `resources.src`
-  (array form, not a bare `**/*.*` glob):
-```js
-resources: {
-  cwd: 'dist/<project-name>/browser/he',
-  src: ['**/*.*', '.Ui5RepositoryBinaryFiles', '.Ui5RepositoryTextFiles']
-}
-```
+  `.Ui5RepositoryTextFiles` (text) — in the build output, and include them in `resources.src` (array
+  form, not a bare `**/*.*` glob, as shown above).
 NOTE: A working S/4HANA-2023 Gruntfile reference lives in the `zcheckit_angular` project.
 
 ANTI-PATTERN: Committing real SAP hostnames, usernames, passwords, or transport numbers to the repo.
