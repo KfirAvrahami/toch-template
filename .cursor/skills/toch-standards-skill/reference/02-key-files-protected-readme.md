@@ -40,7 +40,7 @@
 
 ### src/app/base/base-sap-api.service.ts
 - PURPOSE: Abstract base for SAP OData services.
-- REQUIRED: Every `apiAdapter.ts` that calls SAP extends this class.
+- REQUIRED: Every `adapter.sap.ts` that calls SAP extends this class.
 - REQUIRED: Set `protected readonly service = 'ZREAL_SRV_NAME'` in each concrete class.
 - FORBIDDEN: Use `'ZTEMP_SRV'` in production code — it is a template placeholder.
 

@@ -330,7 +330,7 @@ export class MyComponent extends BaseComponent {
 
 ### src/app/base/base-sap-api.service.ts
 - PURPOSE: Abstract base for SAP OData services.
-- REQUIRED: Every `apiAdapter.ts` that calls SAP extends this class.
+- REQUIRED: Every `adapter.sap.ts` that calls SAP extends this class.
 - REQUIRED: Set `protected readonly service = 'ZREAL_SRV_NAME'` in each concrete class.
 - FORBIDDEN: Use `'ZTEMP_SRV'` in production code — it is a template placeholder.
 
@@ -1413,7 +1413,7 @@ Before responding "done" to the user, verify:
 - [ ] No single-letter or generic variable names
 - [ ] No `console.log` — `LoggerService` used instead
 - [ ] All interactive elements have `data-testid`
-- [ ] New features have `adapters/` folder with `interface.ts`, `providers.ts`, `mockAdapter.ts`
+- [ ] New features have `adapters/` folder with `interface.ts`, `providers.ts`, `adapter.mock.ts`, `adapter.sap.ts`
 - [ ] New types are in `types.ts`, not inline in the component
 - [ ] No negative margins
 - [ ] SCSS nesting mirrors HTML structure

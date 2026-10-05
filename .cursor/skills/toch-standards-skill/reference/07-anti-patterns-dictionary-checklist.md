@@ -166,7 +166,7 @@ Before responding "done" to the user, verify:
 - [ ] No single-letter or generic variable names
 - [ ] No `console.log` — `LoggerService` used instead
 - [ ] All interactive elements have `data-testid`
-- [ ] New features have `adapters/` folder with `interface.ts`, `providers.ts`, `mockAdapter.ts`
+- [ ] New features have `adapters/` folder with `interface.ts`, `providers.ts`, `adapter.mock.ts`, `adapter.sap.ts`
 - [ ] New types are in `types.ts`, not inline in the component
 - [ ] No negative margins
 - [ ] SCSS nesting mirrors HTML structure
