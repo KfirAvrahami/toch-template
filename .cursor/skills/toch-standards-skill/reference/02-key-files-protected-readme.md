@@ -127,16 +127,16 @@ REQUIRED: Deploy with `grunt-nwabap-ui5uploader`. The BSP container (`bsp_applic
 REQUIRED: Credentials and transport number are passed at invocation (`grunt deploy --user=X --pass=Y --tr=Z`
   via `grunt.option(...)`), NEVER hard-coded or committed. `username`/`password` stay empty in the repo.
 
-REQUIRED (SAP S/4HANA 2023): The newer uploader needs the Ui5 repository marker files in `resources.src`,
-  or binary/text assets upload incorrectly. Use the array form, not a bare glob:
+REQUIRED (SAP S/4HANA 2023): If the upload rejects a file whose type the ABAP repository cannot
+  classify (error `/UI5/UI5_REP_LOAD/072` — "Type of file ... is unknown"), hand-author the uploader's
+  marker files listing the offending relative paths — `.Ui5RepositoryBinaryFiles` (binary) and
+  `.Ui5RepositoryTextFiles` (text) — in the build output, and include them in `resources.src`
+  (array form, not a bare `**/*.*` glob):
 ```js
-// S/4HANA 2023 — REQUIRED:
 resources: {
   cwd: 'dist/<project-name>/browser/he',
   src: ['**/*.*', '.Ui5RepositoryBinaryFiles', '.Ui5RepositoryTextFiles']
 }
-// FORBIDDEN on S/4HANA 2023 (old form — breaks binary/text upload):
-// src: '**/*.*'
 ```
 NOTE: A working S/4HANA-2023 Gruntfile reference lives in the `zcheckit_angular` project.
 
