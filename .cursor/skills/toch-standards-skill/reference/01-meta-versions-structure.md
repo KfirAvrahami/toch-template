@@ -22,10 +22,10 @@
 
 ## [META] — Document conventions
 
-- Section tags: [META] [VERSIONS] [FORMATTING] [COMPONENT-PATTERNS] [STRUCTURE] [IMPORTS] [LAYOUT] [LIFECYCLE] [KEY-FILES] [PROTECTED-FILES] [BUILD-DEPLOY] [README] [TESTING-UNIT]
+- Section tags: [META] [VERSIONS] [FORMATTING] [COMPONENT-PATTERNS] [STRUCTURE] [IMPORTS] [LAYOUT] [LIFECYCLE] [KEY-FILES] [BUILD-DEPLOY] [README] [TESTING-UNIT]
   [DESIGN-SYSTEM] [SCSS] [COLORS] [TYPOGRAPHY] [NAMING] [NULL-POLICY] [I18N]
-  [ADAPTER-PATTERN] [SERVICES] [TYPES] [CONSTANTS] [COMMENTS] [TESTIDS] [HTML-TEMPLATES] [ICONS] [DYNAMIC-STYLES] [PLAYWRIGHT] [ANTI-PATTERNS]
-  [DICTIONARY] [PROJECT-AMENDMENTS] [CHECKLIST]
+  [ADAPTER-PATTERN] [CONSTANTS] [COMMENTS] [TESTIDS] [ICONS] [DYNAMIC-STYLES] [PLAYWRIGHT] [ANTI-PATTERNS]
+  [PROJECT-AMENDMENTS]
 - Each section is self-contained. Load only what you need per task.
 - Rules are written as: REQUIRED / FORBIDDEN / ASK / DEFAULT / EXAMPLE / ANTI-PATTERN.
 - "Feature" = one route/page of the application (e.g. home, activations, archive).
@@ -168,8 +168,8 @@ src/
             interface.ts
             providers.ts
             api/
-              mockAdapter.ts      — (legacy name; see adapter-naming note under [STRUCTURE] RULES)
-              ssoAdapter.ts       — (legacy name; see adapter-naming note under [STRUCTURE] RULES)
+              adapter.mock.ts
+              adapter.sso.ts
         loading.service.ts
         logger.service.ts
         splash-screen.service.ts
@@ -215,10 +215,9 @@ RULES:
   `index.ts` barrel of enums) in place of a single `types.ts` — but never both for the same feature.
 - REQUIRED: A feature with mock data has exactly ONE mock-data file, `<feature>-mock.data.ts` at the feature root.
   FORBIDDEN: Keep a second copy inside `adapters/api/` — the mock adapter imports the single root file.
-- ADAPTER NAMING: Feature data adapters are `adapters/api/adapter.mock.ts` and `adapters/api/adapter.sap.ts`
-  (source as the suffix). The `core/services/auth` adapters predate this convention and still use the legacy
-  `mockAdapter.ts` / `ssoAdapter.ts` names; new adapters MUST use the `adapter.<source>.ts` form, and auth
-  SHOULD be renamed to `adapter.mock.ts` / `adapter.sso.ts` when next touched.
+- ADAPTER NAMING: Every adapter file is named `adapter.<source>.ts` — feature data adapters are
+  `adapters/api/adapter.mock.ts` and `adapters/api/adapter.sap.ts`; the `core/services/auth` adapters are
+  `adapter.mock.ts` and `adapter.sso.ts`.
 - Shell components (top-bar, side-bar) live in `core/components/`, never in `features/`.
 - Shared pipes, directives, and components used across 2+ features go in `shared/`.
 - A component used in only one feature stays inside that feature's `components/` folder.

@@ -56,7 +56,7 @@ console.log('user loaded', user);
 this.logger.log('user loaded', user);
 
 // FORBIDDEN — direct adapter import in component
-import { HomeMockAdapter } from './adapters/api/mockAdapter';
+import { HomeMockAdapter } from './adapters/api/adapter.mock';
 
 // FORBIDDEN — environment flag for adapter switch
 if (environment.production) { useRealAdapter(); }

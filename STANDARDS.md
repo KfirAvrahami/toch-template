@@ -17,10 +17,10 @@
 
 ## [META] — Document conventions
 
-- Section tags: [META] [VERSIONS] [FORMATTING] [COMPONENT-PATTERNS] [STRUCTURE] [IMPORTS] [LAYOUT] [LIFECYCLE] [KEY-FILES] [PROTECTED-FILES] [BUILD-DEPLOY] [README] [TESTING-UNIT]
+- Section tags: [META] [VERSIONS] [FORMATTING] [COMPONENT-PATTERNS] [STRUCTURE] [IMPORTS] [LAYOUT] [LIFECYCLE] [KEY-FILES] [BUILD-DEPLOY] [README] [TESTING-UNIT]
   [DESIGN-SYSTEM] [SCSS] [COLORS] [TYPOGRAPHY] [NAMING] [NULL-POLICY] [I18N]
-  [ADAPTER-PATTERN] [SERVICES] [TYPES] [CONSTANTS] [COMMENTS] [TESTIDS] [HTML-TEMPLATES] [ICONS] [DYNAMIC-STYLES] [PLAYWRIGHT] [ANTI-PATTERNS]
-  [DICTIONARY] [PROJECT-AMENDMENTS] [CHECKLIST]
+  [ADAPTER-PATTERN] [CONSTANTS] [COMMENTS] [TESTIDS] [ICONS] [DYNAMIC-STYLES] [PLAYWRIGHT] [ANTI-PATTERNS]
+  [PROJECT-AMENDMENTS]
 - Each section is self-contained. Load only what you need per task.
 - Rules are written as: REQUIRED / FORBIDDEN / ASK / DEFAULT / EXAMPLE / ANTI-PATTERN.
 - "Feature" = one route/page of the application (e.g. home, activations, archive).
@@ -164,8 +164,8 @@ src/
             interface.ts
             providers.ts
             api/
-              mockAdapter.ts      — (legacy name; see adapter-naming note under [STRUCTURE] RULES)
-              ssoAdapter.ts       — (legacy name; see adapter-naming note under [STRUCTURE] RULES)
+              adapter.mock.ts
+              adapter.sso.ts
         loading.service.ts
         logger.service.ts
         splash-screen.service.ts
@@ -211,10 +211,9 @@ RULES:
   `index.ts` barrel of enums) in place of a single `types.ts` — but never both for the same feature.
 - REQUIRED: A feature with mock data has exactly ONE mock-data file, `<feature>-mock.data.ts` at the feature root.
   FORBIDDEN: Keep a second copy inside `adapters/api/` — the mock adapter imports the single root file.
-- ADAPTER NAMING: Feature data adapters are `adapters/api/adapter.mock.ts` and `adapters/api/adapter.sap.ts`
-  (source as the suffix). The `core/services/auth` adapters predate this convention and still use the legacy
-  `mockAdapter.ts` / `ssoAdapter.ts` names; new adapters MUST use the `adapter.<source>.ts` form, and auth
-  SHOULD be renamed to `adapter.mock.ts` / `adapter.sso.ts` when next touched.
+- ADAPTER NAMING: Every adapter file is named `adapter.<source>.ts` — feature data adapters are
+  `adapters/api/adapter.mock.ts` and `adapters/api/adapter.sap.ts`; the `core/services/auth` adapters are
+  `adapter.mock.ts` and `adapter.sso.ts`.
 - Shell components (top-bar, side-bar) live in `core/components/`, never in `features/`.
 - Shared pipes, directives, and components used across 2+ features go in `shared/`.
 - A component used in only one feature stays inside that feature's `components/` folder.
@@ -378,8 +377,8 @@ They form the infrastructure of the template and changes to them have wide-rangi
 | `src/app/base/base.component.ts` | RxJS lifecycle base — changes affect all components that extend it |
 | `src/app/base/base-overlay.service.ts` | Overlay CDK abstraction — changes affect loading and splash |
 | `src/app/core/services/auth/adapters/interface.ts` | Auth contract — changes break both mock and SSO adapters |
-| `src/app/core/services/auth/adapters/api/mockAdapter.ts` | Auth mock — must match the interface exactly |
-| `src/app/core/services/auth/adapters/api/ssoAdapter.ts` | Auth SSO adapter — network-specific implementation |
+| `src/app/core/services/auth/adapters/api/adapter.mock.ts` | Auth mock — must match the interface exactly |
+| `src/app/core/services/auth/adapters/api/adapter.sso.ts` | Auth SSO adapter — network-specific implementation |
 | `src/app/core/services/auth/adapters/providers.ts` | Auth provider wiring — changes affect the entire auth flow |
 | `src/app/core/services/auth/auth.service.ts` | Auth service — changes affect every component using the current user |
 
@@ -419,6 +418,8 @@ REQUIRED: Deploy with `grunt-nwabap-ui5uploader` (modern `conn` / `auth` / `ui5`
   `useStrictSSL: false` for an on-prem server with a self-signed certificate.
 REQUIRED: Credentials and transport are passed at invocation (`grunt deploy --user=X --pass=Y --tr=Z`
   via `grunt.option(...)`), NEVER hard-coded or committed.
+REQUIRED: Pin `grunt-nwabap-ui5uploader` to an EXACT version in `package.json` (not a `^`/`~` range) so the
+  deploy tool cannot drift, and lock its old transitive dependencies with an npm `overrides` block.
 ```js
 nwabap_ui5uploader: {
   options: {
@@ -1314,7 +1315,7 @@ console.log('user loaded', user);
 this.logger.log('user loaded', user);
 
 // FORBIDDEN — direct adapter import in component
-import { HomeMockAdapter } from './adapters/api/mockAdapter';
+import { HomeMockAdapter } from './adapters/api/adapter.mock';
 
 // FORBIDDEN — environment flag for adapter switch
 if (environment.production) { useRealAdapter(); }

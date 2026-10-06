@@ -88,8 +88,8 @@ They form the infrastructure of the template and changes to them have wide-rangi
 | `src/app/base/base.component.ts` | RxJS lifecycle base — changes affect all components that extend it |
 | `src/app/base/base-overlay.service.ts` | Overlay CDK abstraction — changes affect loading and splash |
 | `src/app/core/services/auth/adapters/interface.ts` | Auth contract — changes break both mock and SSO adapters |
-| `src/app/core/services/auth/adapters/api/mockAdapter.ts` | Auth mock — must match the interface exactly |
-| `src/app/core/services/auth/adapters/api/ssoAdapter.ts` | Auth SSO adapter — network-specific implementation |
+| `src/app/core/services/auth/adapters/api/adapter.mock.ts` | Auth mock — must match the interface exactly |
+| `src/app/core/services/auth/adapters/api/adapter.sso.ts` | Auth SSO adapter — network-specific implementation |
 | `src/app/core/services/auth/adapters/providers.ts` | Auth provider wiring — changes affect the entire auth flow |
 | `src/app/core/services/auth/auth.service.ts` | Auth service — changes affect every component using the current user |
 
@@ -129,6 +129,8 @@ REQUIRED: Deploy with `grunt-nwabap-ui5uploader` (modern `conn` / `auth` / `ui5`
   `useStrictSSL: false` for an on-prem server with a self-signed certificate.
 REQUIRED: Credentials and transport are passed at invocation (`grunt deploy --user=X --pass=Y --tr=Z`
   via `grunt.option(...)`), NEVER hard-coded or committed.
+REQUIRED: Pin `grunt-nwabap-ui5uploader` to an EXACT version in `package.json` (not a `^`/`~` range) so the
+  deploy tool cannot drift, and lock its old transitive dependencies with an npm `overrides` block.
 ```js
 nwabap_ui5uploader: {
   options: {

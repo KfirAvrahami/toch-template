@@ -63,7 +63,7 @@
 - Pipes: `<name>.pipe.ts`
 - Types: `types.ts` (per feature), `utility.types.ts` (base)
 - Mock data: `<feature>-mock.data.ts`
-- Adapters: `adapter.mock.ts`, `adapter.sap.ts` (source as suffix; auth keeps legacy `mockAdapter.ts`/`ssoAdapter.ts`)
+- Adapters: `adapter.mock.ts`, `adapter.sap.ts`, `adapter.sso.ts` (source as suffix)
 - Barrel: `index.ts`
 
 ### Constants
