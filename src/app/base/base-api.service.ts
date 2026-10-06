@@ -18,9 +18,10 @@ export abstract class BaseApiService {
 
   constructor(protected readonly _http: HttpClient){}
 
-  assertResponseHasBody<T extends HttpResponse<any>>(response:T): asserts response is WithRequiredFields<T, 'body'> {
-    if(response.body == null) {
-      throw new Error();
+  assertResponseHasBody<T extends HttpResponse<any>>(response: T): asserts response is WithRequiredFields<T, 'body'> {
+    // 201 Created / 204 No Content / 205 Reset Content legitimately have no body.
+    if (response.body == null && ![201, 204, 205].includes(response.status)) {
+      throw new Error(`Unexpected empty response body for status ${response.status}`);
     }
   }
   
