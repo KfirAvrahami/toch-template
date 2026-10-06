@@ -20,8 +20,9 @@ import {
 /**
  * Abstract base for SAP OData services. A concrete service sets `service` to its SAP OData service
  * name and extends this class; a feature's `adapter.sap.ts` then calls the protected helpers.
- * Every request sends `sap-language: 'he'`. Writes (create/patch/delete/upload) fetch a fresh
- * CSRF token first.
+ * Every request sends `sap-language: 'he'`. Reads assert a non-null body. Writes
+ * (create/patch/delete/upload) fetch a fresh CSRF token first and keep `body` nullable, since SAP
+ * may answer 201/204 with no body.
  */
 @Injectable()
 export abstract class BaseSapApiService extends BaseApiService {
@@ -106,11 +107,7 @@ export abstract class BaseSapApiService extends BaseApiService {
           headers: this.writeHeaders(token, headers),
         })
       ),
-      first(),
-      map((response) => {
-        this.assertResponseHasBody(response);
-        return response;
-      })
+      first()
     );
   }
 
@@ -127,11 +124,7 @@ export abstract class BaseSapApiService extends BaseApiService {
           headers: this.writeHeaders(token, headers),
         })
       ),
-      first(),
-      map((response) => {
-        this.assertResponseHasBody(response);
-        return response;
-      })
+      first()
     );
   }
 
@@ -147,11 +140,7 @@ export abstract class BaseSapApiService extends BaseApiService {
           headers: this.writeHeaders(token, headers),
         })
       ),
-      first(),
-      map((response) => {
-        this.assertResponseHasBody(response);
-        return response;
-      })
+      first()
     );
   }
 
@@ -176,7 +165,8 @@ export abstract class BaseSapApiService extends BaseApiService {
             ...headers,
             'sap-language': 'he',
             'x-csrf-token': token,
-            'Content-Type': 'multipart/form-data',
+            // SAP media streams take the raw bytes typed as the file itself (not multipart).
+            'Content-Type': file.type || 'application/octet-stream',
             accept: 'application/json',
             slug: `${encodeURIComponent(file.name)}|${file.type}|${Date.now()}|${slug}`,
           },
@@ -190,10 +180,6 @@ export abstract class BaseSapApiService extends BaseApiService {
       filter(
         (event): event is HttpResponse<EntityResult<T>> => event.type === HttpEventType.Response
       ),
-      map((response) => {
-        this.assertResponseHasBody(response);
-        return response;
-      }),
       first()
     );
   }

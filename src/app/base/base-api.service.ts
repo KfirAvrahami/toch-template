@@ -1,5 +1,5 @@
 import { HttpClient, HttpHeaders, HttpParams, HttpResponse } from '@angular/common/http';
-import { inject, Injectable } from '@angular/core';
+import { Injectable } from '@angular/core';
 import { firstValueFrom, Observable } from 'rxjs';
 import { environment } from '../core/environments/environment';
 import { WithRequiredFields } from './utility.types';
@@ -18,9 +18,12 @@ export abstract class BaseApiService {
 
   constructor(protected readonly _http: HttpClient){}
 
+  /**
+   * Narrows `response.body` to non-null, throwing if it is empty. Use on reads only — writes may
+   * legitimately return no body (201/204), so they keep `body` typed as nullable instead.
+   */
   assertResponseHasBody<T extends HttpResponse<any>>(response: T): asserts response is WithRequiredFields<T, 'body'> {
-    // 201 Created / 204 No Content / 205 Reset Content legitimately have no body.
-    if (response.body == null && ![201, 204, 205].includes(response.status)) {
+    if (response.body == null) {
       throw new Error(`Unexpected empty response body for status ${response.status}`);
     }
   }
@@ -57,7 +60,6 @@ export abstract class BaseApiService {
     return firstValueFrom(this._request<R, P>(path, options));
   }
 
-  //TODO: return to ${environment.api}${path}
   private resolveUrl(path: string): string {
     if (/^https?:\/\//i.test(path)) {
       return path;
