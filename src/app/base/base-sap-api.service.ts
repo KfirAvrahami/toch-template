@@ -226,14 +226,17 @@ export abstract class BaseSapApiService extends BaseApiService {
     return params;
   }
 
-  /** Shared headers for CSRF-protected writes. */
+  /**
+   * Shared headers for CSRF-protected writes. JSON defaults first, then the caller's headers (so a
+   * caller can override `accept`/`content-type`), then the fresh CSRF token, which always wins.
+   */
   private writeHeaders(token: string, headers: RequestHeaders): RequestHeaders {
     return {
       'sap-language': 'he',
-      'x-csrf-token': token,
       accept: 'application/json',
       'content-type': 'application/json',
       ...headers,
+      'x-csrf-token': token,
     };
   }
 }
