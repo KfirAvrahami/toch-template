@@ -398,6 +398,20 @@ REQUIRED: Production build is `ng build`. The deployable output is the browser b
   project builds one bundle per locale. The deploy task uploads that folder, not the `dist/` root.
 FORBIDDEN: Hand-edit anything under `dist/` — it is generated.
 
+### Hosting: hash routing + relative base
+REQUIRED: `provideRouter(routes, withHashLocation())` in `app.config.ts`. A SAP BSP (like any static
+  host) only serves files: it cannot rewrite a deep link such as `/orders/42` to `index.html`, so a
+  refresh or a bookmark would fail. With hash URLs (`#/orders/42`) the route never reaches the server,
+  and no server rewrite config is needed.
+REQUIRED: `<base href="./">` in `src/index.html`. The BSP serves the app from a sub-path
+  (`/sap/bc/ui5_ui5/sap/<app>/`). With `<base href="/">`, every bundle, asset and translation file is
+  requested from the server root and fails: the page stays blank. A relative base is safe only together
+  with hash routing.
+REQUIRED (per-locale builds): `localize` rewrites the base to `/<locale>/`, which is absolute again. Set
+  `"baseHref": "./"` in the `build` target's `options` and `"baseHref": ""` on each entry of `i18n.locales`
+  in `angular.json`, then check `<base href="./">` in every built `index.html`.
+FORBIDDEN: Absolute asset URLs (`/assets/...`) in code, templates or styles — use relative ones (`assets/...`).
+
 ### Dev serve (against SAP)
 DEFAULT: Local dev is `ng serve` with an Angular proxy config (`proxy.config.json`, referenced by the
   `serve` target's `proxyConfig` in `angular.json`) to forward OData calls to a SAP gateway and avoid CORS.
@@ -1451,6 +1465,7 @@ REQUIRED: For this repo, rules documented here (with a Rule ID) override conflic
 | 5/10/2026 | STANDARDS:[STRUCTURE]:document-canonical-files | yes | STANDARDS.md, reference/01 | Added `src/types/`, `styles/variables.scss`+`global.scss`, `core/constants.ts`, `icon-registry.service.ts`, `assets/icons/` to the layout |
 | 5/10/2026 | STANDARDS:[BUILD-DEPLOY]:grunt-bsp-deploy | yes | STANDARDS.md, reference/02 | New section: `ng build`, dev serve via `ng serve` + `proxy.config.json`, Grunt `nwabap` BSP deploy + S/4HANA-2023 marker-files fix |
 | 6/10/2026 | STANDARDS:[BUILD-DEPLOY]:s4-2023-deployer | yes | STANDARDS.md, reference/02 | Deploy = `prepareDeploy` + `deployAbap` via `ui5-nwabap-deployer-core` 2.2.0 (exact pins + `overrides`); marker files are file-TYPE regexes committed at the project root (LF); fail-fast deploy args; masked password |
+| 7/10/2026 | STANDARDS:[BUILD-DEPLOY]:hash-routing-relative-base | yes | STANDARDS.md, reference/02 | Hosting: `withHashLocation()` + `<base href="./">` so the app runs from a BSP sub-path with no server rewrites; no absolute `/assets/` URLs |
 
 ### Project-only rules
 
