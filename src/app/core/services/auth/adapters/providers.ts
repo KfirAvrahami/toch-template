@@ -1,8 +1,8 @@
 import { Provider } from '@angular/core';
 import { AuthService } from '../auth.service';
 import { AUTH_PROVIDER } from './interface';
-import { MockAuthAdapter } from './api/mockAdapter';
-import { SsoAuthAdapter } from './api/ssoAdapter';
+import { MockAuthAdapter } from './api/adapter.mock';
+import { SsoAuthAdapter } from './api/adapter.sso';
 
 export namespace AuthProviders {
   export const Mock: Provider[] = [

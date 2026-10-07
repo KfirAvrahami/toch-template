@@ -1,5 +1,5 @@
 import { HttpClient, HttpHeaders, HttpParams, HttpResponse } from '@angular/common/http';
-import { inject, Injectable } from '@angular/core';
+import { Injectable } from '@angular/core';
 import { firstValueFrom, Observable } from 'rxjs';
 import { environment } from '../core/environments/environment';
 import { WithRequiredFields } from './utility.types';
@@ -18,9 +18,13 @@ export abstract class BaseApiService {
 
   constructor(protected readonly _http: HttpClient){}
 
-  assertResponseHasBody<T extends HttpResponse<any>>(response:T): asserts response is WithRequiredFields<T, 'body'> {
-    if(response.body == null) {
-      throw new Error();
+  /**
+   * Narrows `response.body` to non-null, throwing if it is empty. Use where SAP returns an entity
+   * (reads, create, upload) — not after patch/delete, which answer 204 with no body.
+   */
+  assertResponseHasBody<T extends HttpResponse<any>>(response: T): asserts response is WithRequiredFields<T, 'body'> {
+    if (response.body == null) {
+      throw new Error(`Unexpected empty response body for status ${response.status}`);
     }
   }
   
@@ -56,7 +60,6 @@ export abstract class BaseApiService {
     return firstValueFrom(this._request<R, P>(path, options));
   }
 
-  //TODO: return to ${environment.api}${path}
   private resolveUrl(path: string): string {
     if (/^https?:\/\//i.test(path)) {
       return path;

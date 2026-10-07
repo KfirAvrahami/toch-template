@@ -56,7 +56,7 @@ console.log('user loaded', user);
 this.logger.log('user loaded', user);
 
 // FORBIDDEN — direct adapter import in component
-import { HomeMockAdapter } from './adapters/api/mockAdapter';
+import { HomeMockAdapter } from './adapters/api/adapter.mock';
 
 // FORBIDDEN — environment flag for adapter switch
 if (environment.production) { useRealAdapter(); }
@@ -166,7 +166,7 @@ Before responding "done" to the user, verify:
 - [ ] No single-letter or generic variable names
 - [ ] No `console.log` — `LoggerService` used instead
 - [ ] All interactive elements have `data-testid`
-- [ ] New features have `adapters/` folder with `interface.ts`, `providers.ts`, `mockAdapter.ts`
+- [ ] New features have `adapters/` folder with `interface.ts`, `providers.ts`, `adapter.mock.ts`, `adapter.sap.ts`
 - [ ] New types are in `types.ts`, not inline in the component
 - [ ] No negative margins
 - [ ] SCSS nesting mirrors HTML structure
