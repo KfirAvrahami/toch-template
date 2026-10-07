@@ -332,6 +332,10 @@ export class MyComponent extends BaseComponent {
 - REQUIRED: Every `adapter.sap.ts` that calls SAP extends this class.
 - REQUIRED: Set `protected readonly service = 'ZREAL_SRV_NAME'` in each concrete class.
 - FORBIDDEN: Use `'ZTEMP_SRV'` in production code — it is a template placeholder.
+- BEHAVIOR: Reads force JSON (`$format=json` + `accept: application/json`; OData V2 defaults to XML), send
+  `sap-language` from the active `LOCALE_ID` (`he-IL` -> `HE`), time out after 30s and retry once.
+  `$count` gets no `$format` (it is plain text). Writes are never retried (no double submit).
+- FORBIDDEN: Hard-code `sap-language` or `$format` in an adapter — the base sets both.
 
 ### src/app/app.routes.ts
 - REQUIRED: All routes use `loadComponent` (lazy loading). No eagerly loaded feature components.
@@ -1451,6 +1455,7 @@ REQUIRED: For this repo, rules documented here (with a Rule ID) override conflic
 | 5/10/2026 | STANDARDS:[STRUCTURE]:document-canonical-files | yes | STANDARDS.md, reference/01 | Added `src/types/`, `styles/variables.scss`+`global.scss`, `core/constants.ts`, `icon-registry.service.ts`, `assets/icons/` to the layout |
 | 5/10/2026 | STANDARDS:[BUILD-DEPLOY]:grunt-bsp-deploy | yes | STANDARDS.md, reference/02 | New section: `ng build`, dev serve via `ng serve` + `proxy.config.json`, Grunt `nwabap` BSP deploy + S/4HANA-2023 marker-files fix |
 | 6/10/2026 | STANDARDS:[BUILD-DEPLOY]:s4-2023-deployer | yes | STANDARDS.md, reference/02 | Deploy = `prepareDeploy` + `deployAbap` via `ui5-nwabap-deployer-core` 2.2.0 (exact pins + `overrides`); marker files are file-TYPE regexes committed at the project root (LF); fail-fast deploy args; masked password |
+| 7/10/2026 | STANDARDS:[KEY-FILES]:sap-reads-json-locale-retry | yes | STANDARDS.md, reference/02 | `BaseSapApiService` reads: forced JSON, `sap-language` from `LOCALE_ID`, 30s timeout + 1 retry; no `$format` on `$count`; writes never retried |
 
 ### Project-only rules
 

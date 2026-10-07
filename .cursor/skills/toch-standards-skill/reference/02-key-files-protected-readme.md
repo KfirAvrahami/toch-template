@@ -43,6 +43,10 @@
 - REQUIRED: Every `adapter.sap.ts` that calls SAP extends this class.
 - REQUIRED: Set `protected readonly service = 'ZREAL_SRV_NAME'` in each concrete class.
 - FORBIDDEN: Use `'ZTEMP_SRV'` in production code — it is a template placeholder.
+- BEHAVIOR: Reads force JSON (`$format=json` + `accept: application/json`; OData V2 defaults to XML), send
+  `sap-language` from the active `LOCALE_ID` (`he-IL` -> `HE`), time out after 30s and retry once.
+  `$count` gets no `$format` (it is plain text). Writes are never retried (no double submit).
+- FORBIDDEN: Hard-code `sap-language` or `$format` in an adapter — the base sets both.
 
 ### src/app/app.routes.ts
 - REQUIRED: All routes use `loadComponent` (lazy loading). No eagerly loaded feature components.

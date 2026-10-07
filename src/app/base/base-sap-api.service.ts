@@ -4,9 +4,9 @@ import {
   HttpProgressEvent,
   HttpResponse,
 } from '@angular/common/http';
-import { Injectable } from '@angular/core';
+import { Injectable, LOCALE_ID, inject } from '@angular/core';
 import { Entity, SapFilter, parseSapFilterString } from '@toch/sap-utils';
-import { filter, first, map, switchMap, tap } from 'rxjs';
+import { filter, first, map, retry, switchMap, tap, timeout } from 'rxjs';
 import { environment } from '../core/environments/environment';
 import { BaseApiService } from './base-api.service';
 import { GenericError } from './base.error';
@@ -17,18 +17,26 @@ import {
   SapGetEntitySetRequestOptions,
 } from './utility.types';
 
+/** Read reliability budget: a hung backend fails fast instead of hanging the view. */
+const READ_TIMEOUT_MS = 30_000;
+const READ_RETRY_COUNT = 1;
+const READ_RETRY_DELAY_MS = 500;
+
 /**
  * Abstract base for SAP OData services. A concrete service sets `service` to its SAP OData service
  * name and extends this class; a feature's `adapter.sap.ts` then calls the protected helpers.
- * Every request sends `sap-language: 'he'`. Reads assert a non-null body. Writes
- * (create/patch/delete/upload) fetch a fresh CSRF token first and keep `body` nullable, since SAP
- * may answer 201/204 with no body.
+ * Every request sends the active UI locale as `sap-language` (`he-IL` -> `HE`), so SAP texts come
+ * back in the user's language. Reads force JSON (OData V2 defaults to XML), time out after 30s and
+ * retry once; they assert a non-null body. Writes (create/patch/delete/upload) are never retried
+ * (no double submit); they fetch a fresh CSRF token first and keep `body` nullable, since SAP may
+ * answer 201/204 with no body.
  */
 @Injectable()
 export abstract class BaseSapApiService extends BaseApiService {
   /** SAP OData service name — override in each concrete service (placeholder here). */
   protected readonly service = 'ZTEMP_SRV';
   protected readonly _root = environment.api;
+  private readonly _locale = inject(LOCALE_ID);
 
   constructor(protected override readonly _http: HttpClient) {
     super(_http);
@@ -43,9 +51,11 @@ export abstract class BaseSapApiService extends BaseApiService {
       .get<EntityResult<T>>(`${this._root}/${url}`, {
         observe: 'response',
         params: this.buildParams(options),
-        headers: { ...(options?.headers ?? {}) },
+        headers: this.readHeaders(options?.headers),
       })
       .pipe(
+        timeout(READ_TIMEOUT_MS),
+        retry({ count: READ_RETRY_COUNT, delay: READ_RETRY_DELAY_MS }),
         first(),
         map((response) => {
           this.assertResponseHasBody(response);
@@ -63,9 +73,11 @@ export abstract class BaseSapApiService extends BaseApiService {
       .get<EntitySetResult<K>>(`${this._root}/${url}`, {
         observe: 'response',
         params: this.buildParams(options),
-        headers: { ...(options?.headers ?? {}) },
+        headers: this.readHeaders(options?.headers),
       })
       .pipe(
+        timeout(READ_TIMEOUT_MS),
+        retry({ count: READ_RETRY_COUNT, delay: READ_RETRY_DELAY_MS }),
         first(),
         map((response) => {
           this.assertResponseHasBody(response);
@@ -82,10 +94,12 @@ export abstract class BaseSapApiService extends BaseApiService {
     return this._http
       .get<number>(`${this._root}/${url}/$count`, {
         observe: 'response',
-        params: this.buildParams(options),
-        headers: { ...(options?.headers ?? {}) },
+        params: this.buildParams(options, false),
+        headers: this.readHeaders(options?.headers),
       })
       .pipe(
+        timeout(READ_TIMEOUT_MS),
+        retry({ count: READ_RETRY_COUNT, delay: READ_RETRY_DELAY_MS }),
         first(),
         map((response) => {
           this.assertResponseHasBody(response);
@@ -163,7 +177,7 @@ export abstract class BaseSapApiService extends BaseApiService {
           reportProgress: true,
           headers: {
             ...headers,
-            'sap-language': 'he',
+            'sap-language': this.sapLanguage(),
             'x-csrf-token': token,
             // SAP media streams take the raw bytes typed as the file itself (not multipart).
             'Content-Type': file.type || 'application/octet-stream',
@@ -211,11 +225,29 @@ export abstract class BaseSapApiService extends BaseApiService {
     return `${serviceName}/${entityName}`;
   }
 
-  /** Builds the OData query params from the request options. */
+  /** SAP two-letter language from the Angular locale id (`he-IL` -> `HE`, `he-balmas` -> `HE`). */
+  private sapLanguage(): string {
+    return (this._locale || 'en').slice(0, 2).toUpperCase();
+  }
+
+  /** Read headers: JSON unless the caller asks otherwise. */
+  private readHeaders(headers?: RequestHeaders): RequestHeaders {
+    return { accept: 'application/json', ...(headers ?? {}) };
+  }
+
+  /**
+   * Builds the OData query params from the request options.
+   * @param json add `$format=json` (OData V2 defaults to XML). Off for `$count`, which is plain text.
+   */
   private buildParams<T extends Entity>(
-    options?: SapGetEntitySetRequestOptions<T>
+    options?: SapGetEntitySetRequestOptions<T>,
+    json = true
   ): Record<string, any> {
-    const params: Record<string, any> = { ...(options?.params ?? {}), 'sap-language': 'he' };
+    const params: Record<string, any> = {
+      ...(options?.params ?? {}),
+      ...(json ? { $format: 'json' } : {}),
+      'sap-language': this.sapLanguage(),
+    };
     const filters = parseSapFilterString(options?.filters);
     if (filters.length > 0) {
       params['$filter'] = filters;
@@ -232,7 +264,7 @@ export abstract class BaseSapApiService extends BaseApiService {
    */
   private writeHeaders(token: string, headers: RequestHeaders): RequestHeaders {
     return {
-      'sap-language': 'he',
+      'sap-language': this.sapLanguage(),
       accept: 'application/json',
       'content-type': 'application/json',
       ...headers,
