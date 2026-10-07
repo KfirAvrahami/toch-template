@@ -14,17 +14,7 @@
       "sourceRoot": "src",
       "prefix": "app",
       "i18n": {
-        "sourceLocale": "en",
-        "locales": {
-          "he": {
-            "translation": "src/locale/i18n/he.json",
-            "baseHref": ""
-          },
-          "he-balmas": {
-            "translation": "src/locale/i18n/he-balmas.json",
-            "baseHref": ""
-          }
-        }
+        "sourceLocale": "en"
       },
       "architect": {
         "build": {
@@ -48,6 +38,11 @@
                 "glob": "**/*",
                 "input": "src/assets",
                 "output": "/assets"
+              },
+              {
+                "glob": "*.json",
+                "input": "src/locale/i18n",
+                "output": "/assets/i18n"
               }
             ],
             "styles": [
@@ -57,7 +52,6 @@
           },
           "configurations": {
             "production": {
-              "localize": ["he", "he-balmas"],
               "budgets": [
                 {
                   "type": "initial",
@@ -82,12 +76,6 @@
                   "with": "src/app/core/environments/environment.development.ts"
                 }
               ]
-            },
-            "he": {
-              "localize": ["he"]
-            },
-            "he-balmas": {
-              "localize": ["he-balmas"]
             }
           },
           "defaultConfiguration": "production"
@@ -103,12 +91,6 @@
             },
             "development": {
               "buildTarget": "angular-20-template:build:development"
-            },
-            "he": {
-              "buildTarget": "angular-20-template:build:development,he"
-            },
-            "he-balmas": {
-              "buildTarget": "angular-20-template:build:development,he-balmas"
             }
           },
           "defaultConfiguration": "development"

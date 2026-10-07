@@ -39,7 +39,7 @@ module.exports = function (grunt) {
       upload_build: {
         options: {
           resources: {
-            cwd: 'dist/angular-20-template/browser/he',
+            cwd: 'dist/angular-20-template/browser',
             src: ['**/*.*', '.Ui5RepositoryBinaryFiles', '.Ui5RepositoryTextFiles']
           }
         }

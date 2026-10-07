@@ -121,6 +121,7 @@ src/
   locale/
     i18n/
       he.json                   — Hebrew translations (Angular JSON format)
+      he-balmas.json            — Hebrew variant (different wording); selected via environment.defaultLocale
   assets/
     fonts/
       material-icons/
@@ -166,6 +167,8 @@ src/
             api/
               adapter.mock.ts
               adapter.sso.ts
+        language/
+          language.service.ts       — runtime language switch (store choice + reload)
         loading.service.ts
         logger.service.ts
         splash-screen.service.ts
@@ -881,11 +884,17 @@ REQUIRED: Named placeholders in `he.json` must match the placeholder name in the
   "results.receipts": "{$count} קבלות"
   ```
 
-REQUIRED: When running `npm start` or `ng serve` without a locale configuration, the app runs in English (source locale).
-REQUIRED: To test Hebrew in development, use `npm run start:he` (`ng serve --configuration=development,he`).
-  This applies both development settings (e.g. `environment.development.ts`) and Hebrew localization.
-DEFAULT: Raw `ng serve --configuration=he` without `development` skips dev file replacements — prefer `npm run start:he`.
-REQUIRED: Production build localizes to Hebrew: `ng build` (defaultConfiguration=production includes `localize: ["he"]`).
+REQUIRED: ONE build serves every locale (runtime i18n). `src/main.ts` picks the locale (the user's stored
+  choice, else `environment.defaultLocale`), loads `assets/i18n/<locale>.json` into `$localize` with
+  `loadTranslations()` BEFORE `bootstrapApplication`, and provides it as `LOCALE_ID`.
+REQUIRED: `angular.json` copies `src/locale/i18n/*.json` to `assets/i18n/`. The `build` target has NO
+  `localize` option and no per-locale configurations; `ng build` emits one bundle in `dist/<project-name>/browser`.
+REQUIRED: Switch language only through `LanguageService.switchTo(code)`: it stores the choice and reloads
+  (`$localize` resolves each message when its view is created, so a reload re-initializes them).
+REQUIRED: English is the source locale: the `i18n` / `$localize` default text is English and needs no file.
+DEFAULT: `environment.defaultLocale` is the deployment's starting locale (`he`, or a flavor such as
+  `he-balmas`). A flavor is not a separate picker entry: the Hebrew entry uses the deployment's flavor.
+DEFAULT: To test another locale in development, switch it in the app (or set `localStorage['app.locale']`).
 
 ---
 
@@ -1466,6 +1475,7 @@ REQUIRED: For this repo, rules documented here (with a Rule ID) override conflic
 | 5/10/2026 | STANDARDS:[BUILD-DEPLOY]:grunt-bsp-deploy | yes | STANDARDS.md, reference/02 | New section: `ng build`, dev serve via `ng serve` + `proxy.config.json`, Grunt `nwabap` BSP deploy + S/4HANA-2023 marker-files fix |
 | 6/10/2026 | STANDARDS:[BUILD-DEPLOY]:s4-2023-deployer | yes | STANDARDS.md, reference/02 | Deploy = `prepareDeploy` + `deployAbap` via `ui5-nwabap-deployer-core` 2.2.0 (exact pins + `overrides`); marker files are file-TYPE regexes committed at the project root (LF); fail-fast deploy args; masked password |
 | 7/10/2026 | STANDARDS:[BUILD-DEPLOY]:hash-routing-relative-base | yes | STANDARDS.md, reference/02 | Hosting: `withHashLocation()` + `<base href="./">` so the app runs from a BSP sub-path with no server rewrites; no absolute `/assets/` URLs |
+| 7/10/2026 | STANDARDS:[I18N]:runtime-i18n | yes | STANDARDS.md, reference/04 | One build for every locale: translations loaded at runtime before bootstrap; `LanguageService` switch = store + reload; `environment.defaultLocale` per deployment (flavors like `he-balmas`) |
 
 ### Project-only rules
 

@@ -125,6 +125,7 @@ src/
   locale/
     i18n/
       he.json                   — Hebrew translations (Angular JSON format)
+      he-balmas.json            — Hebrew variant (different wording); selected via environment.defaultLocale
   assets/
     fonts/
       material-icons/
@@ -170,6 +171,8 @@ src/
             api/
               adapter.mock.ts
               adapter.sso.ts
+        language/
+          language.service.ts       — runtime language switch (store choice + reload)
         loading.service.ts
         logger.service.ts
         splash-screen.service.ts

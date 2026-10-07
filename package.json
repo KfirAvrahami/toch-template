@@ -4,8 +4,6 @@
   "scripts": {
     "ng": "ng",
     "start": "ng serve",
-    "start:he": "ng serve --configuration=development,he",
-    "start:he-balmas": "ng serve --configuration=development,he-balmas",
     "build": "ng build",
     "watch": "ng build --watch --configuration development",
     "test": "echo \"Error: no test specified\" && exit 1",
