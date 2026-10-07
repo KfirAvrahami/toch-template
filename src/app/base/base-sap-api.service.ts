@@ -6,7 +6,7 @@ import {
 } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import { Entity, SapFilter, parseSapFilterString } from '@toch/sap-utils';
-import { filter, first, map, switchMap, tap } from 'rxjs';
+import { Observable, filter, first, from, map, switchMap, tap, toArray } from 'rxjs';
 import { environment } from '../core/environments/environment';
 import { BaseApiService } from './base-api.service';
 import { GenericError } from './base.error';
@@ -20,9 +20,9 @@ import {
 /**
  * Abstract base for SAP OData services. A concrete service sets `service` to its SAP OData service
  * name and extends this class; a feature's `adapter.sap.ts` then calls the protected helpers.
- * Every request sends `sap-language: 'he'`. Reads assert a non-null body. Writes
- * (create/patch/delete/upload) fetch a fresh CSRF token first and keep `body` nullable, since SAP
- * may answer 201/204 with no body.
+ * Every request sends `sap-language: 'he'`. Writes (create/patch/delete/upload) fetch a fresh CSRF
+ * token first. Reads, create and upload assert a non-null body (SAP returns the entity); patch and
+ * delete do not (SAP answers 204 No Content), so their `body` stays nullable.
  */
 @Injectable()
 export abstract class BaseSapApiService extends BaseApiService {
@@ -94,6 +94,57 @@ export abstract class BaseSapApiService extends BaseApiService {
       );
   }
 
+  /** GET a single entity and map it to the app's shape. */
+  protected getEntityWithMap<SapEntity extends Entity, ReturnEntity>(
+    entityName: string,
+    mapFn: (entity: SapEntity) => ReturnEntity,
+    options?: SapGetEntitySetRequestOptions<SapEntity>,
+    serviceName: string = this.service
+  ): Observable<ReturnEntity> {
+    return this.getEntity<SapEntity>(this.url(entityName, serviceName), options).pipe(
+      map((response) => mapFn(response.body.d))
+    );
+  }
+
+  /** GET an entity set and map every row to the app's shape. */
+  protected getEntitySetWithMap<SapEntity extends Entity, ReturnEntity>(
+    entityName: string,
+    mapFn: (entity: SapEntity) => ReturnEntity,
+    options?: SapGetEntitySetRequestOptions<SapEntity>,
+    serviceName: string = this.service
+  ): Observable<ReturnEntity[]> {
+    return this.getEntitySet<SapEntity>(this.url(entityName, serviceName), options).pipe(
+      switchMap((response) => from(response.body.d.results).pipe(map(mapFn), toArray()))
+    );
+  }
+
+  /** GET a CDS view (exposed as an entity set) and map every row to the app's shape. */
+  protected getCdsWithMap<SapEntity extends Entity, ReturnEntity>(
+    entityName: string,
+    mapFn: (entity: SapEntity) => ReturnEntity,
+    options?: SapGetEntitySetRequestOptions<SapEntity>,
+    serviceName: string = this.service
+  ): Observable<ReturnEntity[]> {
+    return this.getEntitySet<SapEntity>(this.url(entityName, serviceName), options).pipe(
+      switchMap((response) => from(response.body.d.results).pipe(map(mapFn), toArray()))
+    );
+  }
+
+  /**
+   * GET the first row of a CDS view and map it to the app's shape.
+   * Errors (`EmptyError`) when the view returns no rows.
+   */
+  protected getCdsRowWithMap<SapEntity extends Entity, ReturnEntity>(
+    entityName: string,
+    mapFn: (entity: SapEntity) => ReturnEntity,
+    options?: SapGetEntitySetRequestOptions<SapEntity>,
+    serviceName: string = this.service
+  ): Observable<ReturnEntity> {
+    return this.getEntitySet<SapEntity>(this.url(entityName, serviceName), options).pipe(
+      switchMap((response) => from(response.body.d.results).pipe(map(mapFn), first()))
+    );
+  }
+
   /** POST a new entity (CSRF-protected). */
   protected createEntity<T extends Record<string, any>>(
     url: string,
@@ -107,7 +158,11 @@ export abstract class BaseSapApiService extends BaseApiService {
           headers: this.writeHeaders(token, headers),
         })
       ),
-      first()
+      first(),
+      map((response) => {
+        this.assertResponseHasBody(response);
+        return response;
+      })
     );
   }
 
@@ -165,8 +220,8 @@ export abstract class BaseSapApiService extends BaseApiService {
             ...headers,
             'sap-language': 'he',
             'x-csrf-token': token,
-            // SAP media streams take the raw bytes typed as the file itself (not multipart).
-            'Content-Type': file.type || 'application/octet-stream',
+            // The backend reads the file name and type from the slug below, not from Content-Type.
+            'Content-Type': 'multipart/form-data',
             accept: 'application/json',
             slug: `${encodeURIComponent(file.name)}|${file.type}|${Date.now()}|${slug}`,
           },
@@ -180,6 +235,10 @@ export abstract class BaseSapApiService extends BaseApiService {
       filter(
         (event): event is HttpResponse<EntityResult<T>> => event.type === HttpEventType.Response
       ),
+      map((response) => {
+        this.assertResponseHasBody(response);
+        return response;
+      }),
       first()
     );
   }

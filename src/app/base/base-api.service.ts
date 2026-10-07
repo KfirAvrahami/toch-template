@@ -19,8 +19,8 @@ export abstract class BaseApiService {
   constructor(protected readonly _http: HttpClient){}
 
   /**
-   * Narrows `response.body` to non-null, throwing if it is empty. Use on reads only — writes may
-   * legitimately return no body (201/204), so they keep `body` typed as nullable instead.
+   * Narrows `response.body` to non-null, throwing if it is empty. Use where SAP returns an entity
+   * (reads, create, upload) — not after patch/delete, which answer 204 with no body.
    */
   assertResponseHasBody<T extends HttpResponse<any>>(response: T): asserts response is WithRequiredFields<T, 'body'> {
     if (response.body == null) {
