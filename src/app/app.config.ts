@@ -1,7 +1,7 @@
 import { APP_INITIALIZER, ApplicationConfig, provideBrowserGlobalErrorListeners, provideZoneChangeDetection } from '@angular/core';
 import { provideAnimations } from '@angular/platform-browser/animations';
 import { provideHttpClient, withInterceptors } from '@angular/common/http';
-import { provideRouter } from '@angular/router';
+import { provideRouter, withHashLocation } from '@angular/router';
 
 import { routes } from './app.routes';
 import { cacheInterceptor } from './core/interceptors/cache.interceptor';
@@ -13,7 +13,8 @@ export const appConfig: ApplicationConfig = {
     provideBrowserGlobalErrorListeners(),
     provideZoneChangeDetection({ eventCoalescing: true }),
     provideAnimations(),
-    provideRouter(routes),
+    // Hash URLs: a static host (SAP BSP) cannot rewrite deep links; see [BUILD-DEPLOY] in STANDARDS.md.
+    provideRouter(routes, withHashLocation()),
     provideHttpClient(withInterceptors([cacheInterceptor])),
     ...AuthProviders.Mock,
     {

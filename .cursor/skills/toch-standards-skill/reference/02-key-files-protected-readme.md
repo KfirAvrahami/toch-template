@@ -40,7 +40,7 @@
 
 ### src/app/base/base-sap-api.service.ts
 - PURPOSE: Abstract base for SAP OData services.
-- REQUIRED: Every `apiAdapter.ts` that calls SAP extends this class.
+- REQUIRED: Every `adapter.sap.ts` that calls SAP extends this class.
 - REQUIRED: Set `protected readonly service = 'ZREAL_SRV_NAME'` in each concrete class.
 - FORBIDDEN: Use `'ZTEMP_SRV'` in production code — it is a template placeholder.
 
@@ -88,12 +88,131 @@ They form the infrastructure of the template and changes to them have wide-rangi
 | `src/app/base/base.component.ts` | RxJS lifecycle base — changes affect all components that extend it |
 | `src/app/base/base-overlay.service.ts` | Overlay CDK abstraction — changes affect loading and splash |
 | `src/app/core/services/auth/adapters/interface.ts` | Auth contract — changes break both mock and SSO adapters |
-| `src/app/core/services/auth/adapters/api/mockAdapter.ts` | Auth mock — must match the interface exactly |
-| `src/app/core/services/auth/adapters/api/ssoAdapter.ts` | Auth SSO adapter — network-specific implementation |
+| `src/app/core/services/auth/adapters/api/adapter.mock.ts` | Auth mock — must match the interface exactly |
+| `src/app/core/services/auth/adapters/api/adapter.sso.ts` | Auth SSO adapter — network-specific implementation |
 | `src/app/core/services/auth/adapters/providers.ts` | Auth provider wiring — changes affect the entire auth flow |
 | `src/app/core/services/auth/auth.service.ts` | Auth service — changes affect every component using the current user |
 
 RULE: If you believe a change to one of these files is needed, stop and ask the user to confirm explicitly before making any edit.
+
+---
+
+## [BUILD-DEPLOY]
+
+PURPOSE: These projects ship to SAP as a BSP application (no Node runtime on the server). The Angular
+  app is built to static files and uploaded to the SAP UI5 ABAP repository via Grunt. Dev runs locally
+  and proxies OData calls to a SAP gateway.
+
+### Build
+REQUIRED: Production build is `ng build`. The deployable output is the browser bundle:
+  `dist/<project-name>/browser`, or `dist/<project-name>/browser/<lang>` (e.g. `.../browser/he`) when the
+  project builds one bundle per locale. The deploy task uploads that folder, not the `dist/` root.
+FORBIDDEN: Hand-edit anything under `dist/` — it is generated.
+
+### Hosting: hash routing + relative base
+REQUIRED: `provideRouter(routes, withHashLocation())` in `app.config.ts`. A SAP BSP (like any static
+  host) only serves files: it cannot rewrite a deep link such as `/orders/42` to `index.html`, so a
+  refresh or a bookmark would fail. With hash URLs (`#/orders/42`) the route never reaches the server,
+  and no server rewrite config is needed.
+REQUIRED: `<base href="./">` in `src/index.html`. The BSP serves the app from a sub-path
+  (`/sap/bc/ui5_ui5/sap/<app>/`). With `<base href="/">`, every bundle, asset and translation file is
+  requested from the server root and fails: the page stays blank. A relative base is safe only together
+  with hash routing.
+REQUIRED (per-locale builds): `localize` rewrites the base to `/<locale>/`, which is absolute again. Set
+  `"baseHref": "./"` in the `build` target's `options` and `"baseHref": ""` on each entry of `i18n.locales`
+  in `angular.json`, then check `<base href="./">` in every built `index.html`.
+FORBIDDEN: Absolute asset URLs (`/assets/...`) in code, templates or styles — use relative ones (`assets/...`).
+
+### Dev serve (against SAP)
+DEFAULT: Local dev is `ng serve` with an Angular proxy config (`proxy.config.json`, referenced by the
+  `serve` target's `proxyConfig` in `angular.json`) to forward OData calls to a SAP gateway and avoid CORS.
+  Keep the real gateway host OUT of the committed file — use a placeholder:
+```json
+{
+  "/api": {
+    "target": "https://your-sap-gateway-host.example.com",
+    "secure": true,
+    "changeOrigin": true,
+    "pathRewrite": { "^/api": "/sap/opu/odata/sap" }
+  }
+}
+```
+
+### Deploy (SAP BSP upload, S/4HANA 2023)
+REQUIRED: Pin the deploy tools to these EXACT versions in `devDependencies` (no `^`/`~`):
+  `grunt` `1.4.1`, `grunt-nwabap-ui5uploader` `2.2.0`, `ui5-nwabap-deployer-core` `2.2.0`.
+REQUIRED: Lock the deployer's dependencies with this npm `overrides` block, plus the matching yarn
+  `resolutions` block (one entry per line below, prefixed `ui5-nwabap-deployer-core/`):
+```json
+"overrides": {
+  "ui5-nwabap-deployer-core": {
+    ".": "2.2.0",
+    "axios": "0.21.4",
+    "retry-axios": "2.6.0",
+    "xmldoc": "1.2.0",
+    "yazl": "2.5.1"
+  }
+}
+```
+REQUIRED: `grunt deploy` runs two tasks, in this order:
+  1. `prepareDeploy` — copies the marker files (see below) from the project root into the build output.
+  2. `deployAbap` — uploads the build output with `ui5-nwabap-deployer-core`'s `deployUI5toNWABAP`.
+  The `nwabap_ui5uploader` task is NOT run. Its config block only holds `resources.cwd` / `resources.src`;
+  do not put `conn` / `auth` / `ui5` options there (the uploader no longer reads them).
+REQUIRED: Collect the files with `dot: true` (so the dot-named marker files are included) and read them
+  as binary (`encoding: null`):
+```js
+const files = grunt.file
+  .expand({ cwd: cwd, filter: 'isFile', dot: true }, src) // src: ['**/*.*', '.Ui5RepositoryBinaryFiles', '.Ui5RepositoryTextFiles']
+  .map((filePath) => ({ path: filePath, content: grunt.file.read(cwd + '/' + filePath, { encoding: null }) }));
+
+require('ui5-nwabap-deployer-core').deployUI5toNWABAP(
+  {
+    conn: { server: upload.hostname, client: upload.client, useStrictSSL: false }, // self-signed on-prem cert
+    auth: { user: upload.username, pwd: upload.password },
+    ui5: {
+      package: upload.package, bspcontainer: upload.bsp_application,
+      bspcontainer_text: upload.bsp_application_description, transportno: upload.change_request_id,
+      create_transport: false, language: 'HE'
+    }
+  },
+  files,
+  logger // { log, error, logVerbose } -> grunt.log / grunt.verbose
+);
+```
+REQUIRED: Credentials and transport come from the command line, NEVER from a committed file:
+  `npm run deploy -- --user=X --pass=Y --tr=Z` (optional: `--bspname=A --bspdesc=B --pkg=C`).
+  The `deploy` task copies them into `settings.upload`, then fails fast (`grunt.fail.fatal`) before
+  uploading anything if the host, `--user`, `--pass`, or `--tr` (unless the package is `$TMP`) is missing.
+DEFAULT: Mask the password in the deployer's verbose log (`"pwd":"***"`).
+FORBIDDEN: Combine `--pass` with `--verbose` — grunt echoes the raw command-line options in verbose mode.
+
+### Marker files (S/4HANA 2023)
+REQUIRED: Commit `.Ui5RepositoryBinaryFiles` and `.Ui5RepositoryTextFiles` at the PROJECT ROOT. Each line
+  is a regex for a file TYPE (not a file path). SAP stores matches of the binary list as MIME objects and
+  matches of the text list as codepage-aware text objects. Baseline content:
+```
+.Ui5RepositoryBinaryFiles      .Ui5RepositoryTextFiles
+^.*\.woff$                     ^.*\.md$
+^.*\.woff2$                    ^.*\.map$
+^.*\.ttf$                      ^.*\.txt$
+^.*\.otf$                      ^.*\.webmanifest$
+^.*\.eot$
+^.*\.mp3$
+^.*\.svg$
+^.*\.ico$
+^.*\.wasm$
+```
+RULE: When the upload fails with `/UI5/UI5_REP_LOAD/072` ("Type of file <path> is unknown"), add that
+  file's extension to one list. Open the file in a text editor: unreadable content → binary list;
+  readable text → text list. A type belongs to ONE list only.
+REQUIRED: Keep both files LF-only — in `.gitattributes`: `.Ui5RepositoryBinaryFiles text eol=lf` and
+  `.Ui5RepositoryTextFiles text eol=lf`.
+NOTE: Reference implementation: the `zcheckit_angular` project.
+NOTE: Stricter TypeScript can fail the pipeline build in `sweetalert2` calls — cast the options:
+  `Swal.fire({ ... } as SweetAlertOptions)` with `import Swal, { SweetAlertOptions } from 'sweetalert2';`.
+
+ANTI-PATTERN: Committing real SAP hostnames, usernames, passwords, or transport numbers to the repo.
 
 ---
 

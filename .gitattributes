@@ -1,3 +1,6 @@
-src/app/core/services/auth/adapters/api/ssoAdapter.ts merge=binary 
+src/app/core/services/auth/adapters/api/adapter.sso.ts merge=binary 
 src/locale/i18n/he.json merge=binary 
-*.sap.ts merge=binary 
+*.sap.ts merge=binary
+# SAP reads these line by line on upload; keep LF so no stray \r breaks the `$` anchors.
+.Ui5RepositoryBinaryFiles text eol=lf
+.Ui5RepositoryTextFiles text eol=lf

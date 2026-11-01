@@ -1,7 +1,7 @@
 # STANDARDS — AI Development Rules
 # Angular / TypeScript / SAP OData Projects
-# Version: 1.0 | Template: angular-20-template
-# Date: 26/5/2026
+# Version: 1.1 | Template: angular-20-template
+# Date: 5/10/2026
 #
 # USAGE FOR AI:
 #   - Read this file in full before starting any new project or feature.
@@ -17,7 +17,7 @@
 
 ## [META] — Document conventions
 
-- Section tags: [META] [VERSIONS] [FORMATTING] [COMPONENT-PATTERNS] [STRUCTURE] [IMPORTS] [LAYOUT] [LIFECYCLE] [KEY-FILES] [README] [TESTING-UNIT]
+- Section tags: [META] [VERSIONS] [FORMATTING] [COMPONENT-PATTERNS] [STRUCTURE] [IMPORTS] [LAYOUT] [LIFECYCLE] [KEY-FILES] [BUILD-DEPLOY] [README] [TESTING-UNIT]
   [DESIGN-SYSTEM] [SCSS] [COLORS] [TYPOGRAPHY] [NAMING] [NULL-POLICY] [I18N]
   [ADAPTER-PATTERN] [CONSTANTS] [COMMENTS] [TESTIDS] [ICONS] [DYNAMIC-STYLES] [PLAYWRIGHT] [ANTI-PATTERNS]
   [PROJECT-AMENDMENTS]
@@ -108,10 +108,16 @@ FORBIDDEN: Deviate from this structure without explicit user approval.
 
 ```
 src/
+  main.ts                       — bootstrapApplication(App, appConfig)
+  index.html                    — document shell (do not add app markup here)
   polyfills.ts                  — @angular/localize/init import (do not remove)
-  styles.scss                   — global CSS variables and base styles only
+  styles.scss                   — global entry: @use the files in styles/ + base resets only
   styles/
+    variables.scss              — :root design tokens (colors, spacing, radii) — light + dark
+    global.scss                 — app-wide base styles / shared utility classes
     overlay.scss                — CDK overlay styles
+  types/
+    <name>.d.ts                 — ambient type declarations (e.g. @toch/sap-utils typings)
   locale/
     i18n/
       he.json                   — Hebrew translations (Angular JSON format)
@@ -119,6 +125,8 @@ src/
     fonts/
       material-icons/
         index.css
+    icons/
+      <name>.svg                — SVG icons registered via MatIconRegistry (see icon-registry.service)
   app/
     app.ts                      — root component, AuthProviders, shell signals
     app.html                    — shell layout: top-bar, side-bar, router-outlet
@@ -133,6 +141,7 @@ src/
       utility.types.ts          — shared utility types
       utilities.ts              — shared utility functions
     core/
+      constants.ts              — app-level constants (SAP service/entity-set names, magic numbers)
       components/
         top-bar/
           top-bar.component.ts
@@ -148,14 +157,15 @@ src/
       interceptors/
         cache.interceptor.ts
       services/
+        icon-registry.service.ts — registers assets/icons/*.svg with MatIconRegistry at bootstrap
         auth/
           auth.service.ts
           adapters/
             interface.ts
             providers.ts
             api/
-              mockAdapter.ts
-              ssoAdapter.ts
+              adapter.mock.ts
+              adapter.sso.ts
         loading.service.ts
         logger.service.ts
         splash-screen.service.ts
@@ -163,7 +173,8 @@ src/
       <feature-name>/
         index.ts                — barrel: export { FeatureComponent } from './pages/...'
         types.ts                — all interfaces, enums, type aliases for this feature
-        home-mock.data.ts       — mock data array (only if feature has mock data)
+                                  (large features may use a types/ folder of barrels instead)
+        <feature>-mock.data.ts  — mock data array (only if feature has mock data) — see RULES
         pages/
           <feature>.component.ts
           <feature>.component.html
@@ -190,10 +201,19 @@ src/
 ```
 
 RULES:
+- REQUIRED: The routed component of a feature lives in `pages/<feature>.component.{ts,html,scss}`.
+  FORBIDDEN: Place the routed component file at the feature root (e.g. `features/home/home.component.ts`) — it must be under `pages/`.
 - Every feature that reads or writes data MUST have an `adapters/` folder.
 - Feature state (loading, data, error) lives in `services/<feature>.service.ts`, not in the component.
 - `index.ts` barrel exports only the routed component — nothing else.
 - `types.ts` contains ALL TypeScript types for that feature. No inline type declarations in components.
+  A feature with a large/structured type surface MAY use a `types/` folder (e.g. `types/<name>.type.ts` + an
+  `index.ts` barrel of enums) in place of a single `types.ts` — but never both for the same feature.
+- REQUIRED: A feature with mock data has exactly ONE mock-data file, `<feature>-mock.data.ts` at the feature root.
+  FORBIDDEN: Keep a second copy inside `adapters/api/` — the mock adapter imports the single root file.
+- ADAPTER NAMING: Every adapter file is named `adapter.<source>.ts` — feature data adapters are
+  `adapters/api/adapter.mock.ts` and `adapters/api/adapter.sap.ts`; the `core/services/auth` adapters are
+  `adapter.mock.ts` and `adapter.sso.ts`.
 - Shell components (top-bar, side-bar) live in `core/components/`, never in `features/`.
 - Shared pipes, directives, and components used across 2+ features go in `shared/`.
 - A component used in only one feature stays inside that feature's `components/` folder.
@@ -309,7 +329,7 @@ export class MyComponent extends BaseComponent {
 
 ### src/app/base/base-sap-api.service.ts
 - PURPOSE: Abstract base for SAP OData services.
-- REQUIRED: Every `apiAdapter.ts` that calls SAP extends this class.
+- REQUIRED: Every `adapter.sap.ts` that calls SAP extends this class.
 - REQUIRED: Set `protected readonly service = 'ZREAL_SRV_NAME'` in each concrete class.
 - FORBIDDEN: Use `'ZTEMP_SRV'` in production code — it is a template placeholder.
 
@@ -357,12 +377,131 @@ They form the infrastructure of the template and changes to them have wide-rangi
 | `src/app/base/base.component.ts` | RxJS lifecycle base — changes affect all components that extend it |
 | `src/app/base/base-overlay.service.ts` | Overlay CDK abstraction — changes affect loading and splash |
 | `src/app/core/services/auth/adapters/interface.ts` | Auth contract — changes break both mock and SSO adapters |
-| `src/app/core/services/auth/adapters/api/mockAdapter.ts` | Auth mock — must match the interface exactly |
-| `src/app/core/services/auth/adapters/api/ssoAdapter.ts` | Auth SSO adapter — network-specific implementation |
+| `src/app/core/services/auth/adapters/api/adapter.mock.ts` | Auth mock — must match the interface exactly |
+| `src/app/core/services/auth/adapters/api/adapter.sso.ts` | Auth SSO adapter — network-specific implementation |
 | `src/app/core/services/auth/adapters/providers.ts` | Auth provider wiring — changes affect the entire auth flow |
 | `src/app/core/services/auth/auth.service.ts` | Auth service — changes affect every component using the current user |
 
 RULE: If you believe a change to one of these files is needed, stop and ask the user to confirm explicitly before making any edit.
+
+---
+
+## [BUILD-DEPLOY]
+
+PURPOSE: These projects ship to SAP as a BSP application (no Node runtime on the server). The Angular
+  app is built to static files and uploaded to the SAP UI5 ABAP repository via Grunt. Dev runs locally
+  and proxies OData calls to a SAP gateway.
+
+### Build
+REQUIRED: Production build is `ng build`. The deployable output is the browser bundle:
+  `dist/<project-name>/browser`, or `dist/<project-name>/browser/<lang>` (e.g. `.../browser/he`) when the
+  project builds one bundle per locale. The deploy task uploads that folder, not the `dist/` root.
+FORBIDDEN: Hand-edit anything under `dist/` — it is generated.
+
+### Hosting: hash routing + relative base
+REQUIRED: `provideRouter(routes, withHashLocation())` in `app.config.ts`. A SAP BSP (like any static
+  host) only serves files: it cannot rewrite a deep link such as `/orders/42` to `index.html`, so a
+  refresh or a bookmark would fail. With hash URLs (`#/orders/42`) the route never reaches the server,
+  and no server rewrite config is needed.
+REQUIRED: `<base href="./">` in `src/index.html`. The BSP serves the app from a sub-path
+  (`/sap/bc/ui5_ui5/sap/<app>/`). With `<base href="/">`, every bundle, asset and translation file is
+  requested from the server root and fails: the page stays blank. A relative base is safe only together
+  with hash routing.
+REQUIRED (per-locale builds): `localize` rewrites the base to `/<locale>/`, which is absolute again. Set
+  `"baseHref": "./"` in the `build` target's `options` and `"baseHref": ""` on each entry of `i18n.locales`
+  in `angular.json`, then check `<base href="./">` in every built `index.html`.
+FORBIDDEN: Absolute asset URLs (`/assets/...`) in code, templates or styles — use relative ones (`assets/...`).
+
+### Dev serve (against SAP)
+DEFAULT: Local dev is `ng serve` with an Angular proxy config (`proxy.config.json`, referenced by the
+  `serve` target's `proxyConfig` in `angular.json`) to forward OData calls to a SAP gateway and avoid CORS.
+  Keep the real gateway host OUT of the committed file — use a placeholder:
+```json
+{
+  "/api": {
+    "target": "https://your-sap-gateway-host.example.com",
+    "secure": true,
+    "changeOrigin": true,
+    "pathRewrite": { "^/api": "/sap/opu/odata/sap" }
+  }
+}
+```
+
+### Deploy (SAP BSP upload, S/4HANA 2023)
+REQUIRED: Pin the deploy tools to these EXACT versions in `devDependencies` (no `^`/`~`):
+  `grunt` `1.4.1`, `grunt-nwabap-ui5uploader` `2.2.0`, `ui5-nwabap-deployer-core` `2.2.0`.
+REQUIRED: Lock the deployer's dependencies with this npm `overrides` block, plus the matching yarn
+  `resolutions` block (one entry per line below, prefixed `ui5-nwabap-deployer-core/`):
+```json
+"overrides": {
+  "ui5-nwabap-deployer-core": {
+    ".": "2.2.0",
+    "axios": "0.21.4",
+    "retry-axios": "2.6.0",
+    "xmldoc": "1.2.0",
+    "yazl": "2.5.1"
+  }
+}
+```
+REQUIRED: `grunt deploy` runs two tasks, in this order:
+  1. `prepareDeploy` — copies the marker files (see below) from the project root into the build output.
+  2. `deployAbap` — uploads the build output with `ui5-nwabap-deployer-core`'s `deployUI5toNWABAP`.
+  The `nwabap_ui5uploader` task is NOT run. Its config block only holds `resources.cwd` / `resources.src`;
+  do not put `conn` / `auth` / `ui5` options there (the uploader no longer reads them).
+REQUIRED: Collect the files with `dot: true` (so the dot-named marker files are included) and read them
+  as binary (`encoding: null`):
+```js
+const files = grunt.file
+  .expand({ cwd: cwd, filter: 'isFile', dot: true }, src) // src: ['**/*.*', '.Ui5RepositoryBinaryFiles', '.Ui5RepositoryTextFiles']
+  .map((filePath) => ({ path: filePath, content: grunt.file.read(cwd + '/' + filePath, { encoding: null }) }));
+
+require('ui5-nwabap-deployer-core').deployUI5toNWABAP(
+  {
+    conn: { server: upload.hostname, client: upload.client, useStrictSSL: false }, // self-signed on-prem cert
+    auth: { user: upload.username, pwd: upload.password },
+    ui5: {
+      package: upload.package, bspcontainer: upload.bsp_application,
+      bspcontainer_text: upload.bsp_application_description, transportno: upload.change_request_id,
+      create_transport: false, language: 'HE'
+    }
+  },
+  files,
+  logger // { log, error, logVerbose } -> grunt.log / grunt.verbose
+);
+```
+REQUIRED: Credentials and transport come from the command line, NEVER from a committed file:
+  `npm run deploy -- --user=X --pass=Y --tr=Z` (optional: `--bspname=A --bspdesc=B --pkg=C`).
+  The `deploy` task copies them into `settings.upload`, then fails fast (`grunt.fail.fatal`) before
+  uploading anything if the host, `--user`, `--pass`, or `--tr` (unless the package is `$TMP`) is missing.
+DEFAULT: Mask the password in the deployer's verbose log (`"pwd":"***"`).
+FORBIDDEN: Combine `--pass` with `--verbose` — grunt echoes the raw command-line options in verbose mode.
+
+### Marker files (S/4HANA 2023)
+REQUIRED: Commit `.Ui5RepositoryBinaryFiles` and `.Ui5RepositoryTextFiles` at the PROJECT ROOT. Each line
+  is a regex for a file TYPE (not a file path). SAP stores matches of the binary list as MIME objects and
+  matches of the text list as codepage-aware text objects. Baseline content:
+```
+.Ui5RepositoryBinaryFiles      .Ui5RepositoryTextFiles
+^.*\.woff$                     ^.*\.md$
+^.*\.woff2$                    ^.*\.map$
+^.*\.ttf$                      ^.*\.txt$
+^.*\.otf$                      ^.*\.webmanifest$
+^.*\.eot$
+^.*\.mp3$
+^.*\.svg$
+^.*\.ico$
+^.*\.wasm$
+```
+RULE: When the upload fails with `/UI5/UI5_REP_LOAD/072` ("Type of file <path> is unknown"), add that
+  file's extension to one list. Open the file in a text editor: unreadable content → binary list;
+  readable text → text list. A type belongs to ONE list only.
+REQUIRED: Keep both files LF-only — in `.gitattributes`: `.Ui5RepositoryBinaryFiles text eol=lf` and
+  `.Ui5RepositoryTextFiles text eol=lf`.
+NOTE: Reference implementation: the `zcheckit_angular` project.
+NOTE: Stricter TypeScript can fail the pipeline build in `sweetalert2` calls — cast the options:
+  `Swal.fire({ ... } as SweetAlertOptions)` with `import Swal, { SweetAlertOptions } from 'sweetalert2';`.
+
+ANTI-PATTERN: Committing real SAP hostnames, usernames, passwords, or transport numbers to the repo.
 
 ---
 
@@ -809,12 +948,12 @@ export class HomeService {
 { path: 'home', providers: [...HomeProviders.Api], loadComponent: ... }
 ```
 
-FORBIDDEN: Import `adapter.mock` or `adapter.sap` class directly in a component or service.
+FORBIDDEN: Import a concrete `adapter.mock.ts` / `adapter.sap.ts` class directly in a component or service — always inject via the token.
 FORBIDDEN: Use `if (environment.production)` to switch adapters — use the provider pattern.
 FORBIDDEN: Add an adapter discriminator field (e.g. `adapter: 'mock' | 'api'`) to result interfaces unless the consumer explicitly needs to distinguish the source. The adapter pattern's purpose is transparency — the consumer should not know or care which adapter is active.
-REQUIRED: `mockAdapter.ts` returns data from `<feature>-mock.data.ts` — never inline mock data in the adapter.
+REQUIRED: `adapter.mock.ts` returns data from `<feature>-mock.data.ts` — never inline mock data in the adapter.
 REQUIRED: SAP date strings in mock data use the real OData format: `/Date(timestamp)/`.
-REQUIRED: `apiAdapter.ts` extends `BaseSapApiService` and sets `protected readonly service = 'ZREAL_SRV'`.
+REQUIRED: `adapter.sap.ts` extends `BaseSapApiService` and sets `protected readonly service = 'ZREAL_SRV'`.
 
 ---
 
@@ -1229,7 +1368,7 @@ console.log('user loaded', user);
 this.logger.log('user loaded', user);
 
 // FORBIDDEN — direct adapter import in component
-import { HomeMockAdapter } from './adapters/api/mockAdapter';
+import { HomeMockAdapter } from './adapters/api/adapter.mock';
 
 // FORBIDDEN — environment flag for adapter switch
 if (environment.production) { useRealAdapter(); }
@@ -1320,6 +1459,13 @@ REQUIRED: For this repo, rules documented here (with a Rule ID) override conflic
 
 | Date | Rule ID | Promoted | Files touched | Notes |
 |------|---------|----------|---------------|-------|
+| 5/10/2026 | STANDARDS:[STRUCTURE]:pages-folder-required | yes | STANDARDS.md, reference/01 | Routed component MUST live in `pages/`; feature-root placement forbidden |
+| 5/10/2026 | STANDARDS:[STRUCTURE]:single-mock-data-file | yes | STANDARDS.md, reference/01 | Exactly one `<feature>-mock.data.ts` at feature root; no duplicate in `adapters/api/` |
+| 5/10/2026 | STANDARDS:[ADAPTER-PATTERN]:adapter-source-suffix | yes | STANDARDS.md, reference/01, reference/05 | Canonical adapter names `adapter.mock.ts` / `adapter.sap.ts`; synced stale `mockAdapter.ts`/`apiAdapter.ts` mirror text |
+| 5/10/2026 | STANDARDS:[STRUCTURE]:document-canonical-files | yes | STANDARDS.md, reference/01 | Added `src/types/`, `styles/variables.scss`+`global.scss`, `core/constants.ts`, `icon-registry.service.ts`, `assets/icons/` to the layout |
+| 5/10/2026 | STANDARDS:[BUILD-DEPLOY]:grunt-bsp-deploy | yes | STANDARDS.md, reference/02 | New section: `ng build`, dev serve via `ng serve` + `proxy.config.json`, Grunt `nwabap` BSP deploy + S/4HANA-2023 marker-files fix |
+| 6/10/2026 | STANDARDS:[BUILD-DEPLOY]:s4-2023-deployer | yes | STANDARDS.md, reference/02 | Deploy = `prepareDeploy` + `deployAbap` via `ui5-nwabap-deployer-core` 2.2.0 (exact pins + `overrides`); marker files are file-TYPE regexes committed at the project root (LF); fail-fast deploy args; masked password |
+| 7/10/2026 | STANDARDS:[BUILD-DEPLOY]:hash-routing-relative-base | yes | STANDARDS.md, reference/02 | Hosting: `withHashLocation()` + `<base href="./">` so the app runs from a BSP sub-path with no server rewrites; no absolute `/assets/` URLs |
 
 ### Project-only rules
 
@@ -1340,7 +1486,7 @@ Before responding "done" to the user, verify:
 - [ ] No single-letter or generic variable names
 - [ ] No `console.log` — `LoggerService` used instead
 - [ ] All interactive elements have `data-testid`
-- [ ] New features have `adapters/` folder with `interface.ts`, `providers.ts`, `mockAdapter.ts`
+- [ ] New features have `adapters/` folder with `interface.ts`, `providers.ts`, `adapter.mock.ts`, `adapter.sap.ts`
 - [ ] New types are in `types.ts`, not inline in the component
 - [ ] No negative margins
 - [ ] SCSS nesting mirrors HTML structure

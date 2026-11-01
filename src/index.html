@@ -3,7 +3,9 @@
 <head>
   <meta charset="utf-8">
   <title>Angular20Template</title>
-  <base href="/">
+  <!-- Relative base: the app runs from any folder (e.g. a SAP BSP under /sap/bc/ui5_ui5/sap/<app>/).
+       Safe only with hash routing (withHashLocation in app.config.ts), which keeps routes out of the path. -->
+  <base href="./">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <link rel="icon" type="image/x-icon" href="favicon.ico">
 </head>
